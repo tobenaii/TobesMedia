@@ -1,0 +1,61 @@
+﻿@page "/"
+@using TobesMediaCore.Data.Media;
+@using TobesMediaCore.Network;
+@using System.Net.Http
+@inject HttpClient Http
+
+<h3>Movies</h3>
+<input @bind="SearchTerm"/>
+@if (movies.Count == 0)
+{
+    <p>Loading...</p>
+}
+else
+{
+<table>
+    @foreach (MediaBase movie in movies)
+    {
+        <tr>@movie.Name</tr>
+        <tr><input type="image" src=@movie.PosterURL @onclick="(() => DownloadMovie(movie.ID))"/></tr>
+    }
+</table>
+}
+
+@code {
+    private string m_searchTerm;
+    private string SearchTerm {get { return m_searchTerm; } set { m_searchTerm = value; LoadMoviesByName(); } }
+    List<MediaBase> movies = new List<MediaBase>();
+
+    protected override void OnInitialized()
+    {
+        LoadMovies();
+    }
+
+    private async void DownloadMovie(string id)
+    {
+        id = id.Replace("tt", "");
+        await Http.PutAsync("https://localhost:5001/api/media/" + id, null);
+    }
+
+    private void UpdateSearch()
+    {
+        LoadMoviesByName();
+    }
+
+    private async void LoadMovies()
+    {
+        MediaBaseRequest request = new MediaBaseRequest();
+        MediaBase movie = await request.GetMedia("tt3896198", Http);
+        Console.WriteLine(movie.ID);
+        movies.Add(movie);
+        StateHasChanged();
+    }
+
+    private async void LoadMoviesByName()
+    {
+        MediaBaseRequest request = new MediaBaseRequest();
+        movies = await request.GetMoviesByName(SearchTerm, Http);
+        Console.Write(movies[0]);
+        StateHasChanged();
+    }
+}
