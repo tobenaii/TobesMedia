@@ -41,7 +41,6 @@ namespace TobesMediaServer
             {
                 app.UseDeveloperExceptionPage();
             }
-
             app.UseHttpsRedirection();
             app.UseCors("MyPolicy");
             app.UseRouting();

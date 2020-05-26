@@ -6,17 +6,17 @@
 
 <h3>Movies</h3>
 <input @bind="SearchTerm"/>
-@if (movies.Count == 0)
+@if (movies.List.Count == 0)
 {
     <p>Loading...</p>
 }
 else
 {
 <table>
-    @foreach (MediaBase movie in movies)
+    @foreach (MediaBase movie in movies.List)
     {
         <tr>@movie.Name</tr>
-        <tr><input type="image" src=@movie.PosterURL @onclick="(() => DownloadMovie(movie.ID))"/></tr>
+        <tr><input type="image" src=@movie.PosterURL @onclick="(() => DownloadMovie(movie))"/></tr>
     }
 </table>
 }
@@ -24,17 +24,16 @@ else
 @code {
     private string m_searchTerm;
     private string SearchTerm {get { return m_searchTerm; } set { m_searchTerm = value; LoadMoviesByName(); } }
-    List<MediaBase> movies = new List<MediaBase>();
+    MediaBaseList movies = new MediaBaseList();
 
     protected override void OnInitialized()
     {
         LoadMovies();
     }
 
-    private async void DownloadMovie(string id)
+    private async void DownloadMovie(MediaBase mediaBase)
     {
-        id = id.Replace("tt", "");
-        await Http.PutAsync("https://localhost:5001/api/media/" + id, null);
+        await mediaBase.DownloadMovie(Http);
     }
 
     private void UpdateSearch()
@@ -44,18 +43,17 @@ else
 
     private async void LoadMovies()
     {
-        MediaBaseRequest request = new MediaBaseRequest();
-        MediaBase movie = await request.GetMedia("tt3896198", Http);
+        MediaBase movie = new MediaBase();
+        await movie.LoadMovieAsync("tt3896198", Http);
         Console.WriteLine(movie.ID);
-        movies.Add(movie);
+        movies.List.Add(movie);
         StateHasChanged();
     }
 
     private async void LoadMoviesByName()
     {
-        MediaBaseRequest request = new MediaBaseRequest();
-        movies = await request.GetMoviesByName(SearchTerm, Http);
-        Console.Write(movies[0]);
+        movies.List.Clear();
+        await movies.LoadMoviesByName(SearchTerm, Http);
         StateHasChanged();
     }
 }
