@@ -27,7 +27,7 @@ namespace TobesMediaCore.Data.Media
 
         public async Task LoadMovieAsync(string imdbID, HttpClient client)
         {
-            HttpResponseMessage response = await client.GetAsync("https://localhost:44340/api/media/get/movie/" + imdbID);
+            HttpResponseMessage response = await client.GetAsync("https://localhost:5001/api/media/get/movie/" + imdbID);
             string jsonObj = await response.Content.ReadAsStringAsync();
             MediaBase mediaBase = JsonConvert.DeserializeObject<MediaBase>(jsonObj);
             Name = mediaBase.Name;
@@ -39,7 +39,7 @@ namespace TobesMediaCore.Data.Media
         public async Task DownloadMovie(HttpClient client)
         {
             string id = ID.Replace("tt", "");
-            await client.PutAsync("https://localhost:44340/api/media/request/movie/" + id, null);
+            await client.PutAsync("https://localhost:5001/api/media/request/movie/" + id, null);
         }
     }
 }
