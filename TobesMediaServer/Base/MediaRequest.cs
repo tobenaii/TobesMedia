@@ -63,7 +63,11 @@ namespace TobesMediaCore.Network
                     {
                         m_currentDownloads.Remove(item.ID);
                         string fileDir = FindMediaFileRecursive(item.Directory);
-                        Process.Start(fileDir);
+                        fileDir = fileDir.Replace('\\', '/');
+                        ProcessStartInfo file = new ProcessStartInfo();
+                        file.FileName = fileDir;
+                        file.UseShellExecute = true;
+                        Process.Start(file);
                     }
                 }
             }
