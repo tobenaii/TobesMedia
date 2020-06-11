@@ -15,6 +15,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using TobesMediaCore.Data.Media;
 using TobesMediaCore.Network;
+using TobesMediaServer.NZBGet;
 
 namespace TobesMediaServer.Controllers
 {
@@ -22,7 +23,7 @@ namespace TobesMediaServer.Controllers
     [ApiController]
     public class MediaBaseController : ControllerBase
     {
-        private MediaBaseRequest m_mediaBaseRequest = new MediaBaseRequest();
+        private MediaRequest m_mediaBaseRequest = new MediaRequest();
 
         [Route("media/request/movie/{id}")]
         public async Task RequestMovieByIDAsync(string id)
