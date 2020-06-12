@@ -23,13 +23,8 @@ namespace TobesMediaServer.NZBGet
             //m_timer.Enabled = true;
         }
 
-        public async Task<int> DownloadMovieByIDAsync(string NZBDID)
+        public int DownloadMovieByNzbLink(string link)
         {
-            var message = await m_client.GetAsync("https://api.nzbgeek.info/api?t=movie&q=1080p&maxsize=5242880000&imdbid=" + NZBDID.Replace("TT", "") + "&limit=50&o=json&apikey=3d98d8eaf835802e503a0a936f37ce7c");
-            JObject jsonNZB = JObject.Parse(await message.Content.ReadAsStringAsync());
-            JArray array = JArray.Parse(jsonNZB["channel"]["item"].ToString());
-            string link = array[0]["link"].ToString().Replace(";", "&");
-
             RPCRequest request = new RPCRequest();
             request.jsonrpc = "2.0";
             request.id = 1;

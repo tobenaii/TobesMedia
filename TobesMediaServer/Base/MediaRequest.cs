@@ -1,20 +1,17 @@
-﻿using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using TobesMediaCore.Data.Media;
 using TobesMediaServer.Base;
 using TobesMediaServer.NZBGet;
 using TobesMediaServer.OMDB;
+using System.Data.SQLite;
+using TobesMediaServer.NZBGeek;
+using TobesMediaServer.Database;
 
 namespace TobesMediaCore.Network
 {
@@ -37,6 +34,8 @@ namespace TobesMediaCore.Network
     {
         private NZBgetManager m_nzbgetManager = new NZBgetManager();
         private OmdbManager m_omdbManager = new OmdbManager();
+        private NzbGeekManager m_nzbGeekManager = new NzbGeekManager();
+        private MovieDatabase m_movieDatabase = new MovieDatabase();
 
         private System.Timers.Timer m_timer = new System.Timers.Timer();
         private Dictionary<int, DownloadItem> m_currentDownloads = new Dictionary<int, DownloadItem>();
@@ -93,10 +92,13 @@ namespace TobesMediaCore.Network
             return "";
         }
 
-        public async Task DownloadMovieByIDAsync(string NZBDID)
+        public async Task DownloadMovieByIDAsync(string nzbID)
         {
-            int id = await m_nzbgetManager.DownloadMovieByIDAsync(NZBDID);
+            string nzbLink = await m_nzbGeekManager.GetLinkByNzbIdAsync(nzbID);
+            int id = m_nzbgetManager.DownloadMovieByNzbLink(nzbLink);
             m_currentDownloads.Add(id, new DownloadItem());
+            MediaBase movie = await GetMovieByIDAsync("tt" + nzbID);
+            m_movieDatabase.AddMovie(movie.Name, id, nzbID);
         }
 
         public async Task<MediaBase> GetMovieByIDAsync(string imdbID)
