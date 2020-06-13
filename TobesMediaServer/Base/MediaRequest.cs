@@ -9,7 +9,6 @@ using TobesMediaCore.Data.Media;
 using TobesMediaServer.Base;
 using TobesMediaServer.NZBGet;
 using TobesMediaServer.OMDB;
-using System.Data.SQLite;
 using TobesMediaServer.NZBGeek;
 using TobesMediaServer.Database;
 
@@ -36,6 +35,7 @@ namespace TobesMediaCore.Network
         private OmdbManager m_omdbManager = new OmdbManager();
         private NzbGeekManager m_nzbGeekManager = new NzbGeekManager();
         private MovieDatabase m_movieDatabase = new MovieDatabase();
+        private DownloadDatabase m_downloadDatabase = new DownloadDatabase();
 
         private System.Timers.Timer m_timer = new System.Timers.Timer();
         private Dictionary<int, DownloadItem> m_currentDownloads = new Dictionary<int, DownloadItem>();
@@ -63,8 +63,20 @@ namespace TobesMediaCore.Network
                         m_currentDownloads.Remove(item.ID);
                         string fileDir = FindMediaFileRecursive(item.Directory);
                         fileDir = fileDir.Replace('\\', '/');
+                        string imdbID = m_downloadDatabase.GetImdbID(item.ID);
+                        MediaBase movie = await GetMovieByIDAsync("tt" + imdbID);
+                        movie.IsDownloaded = true;
+                        string newDir = $"C:/MediaServer/Movies/{movie.Name}/";
+                        Directory.CreateDirectory(newDir);
+                        string newFileDir = newDir + movie.Name + Path.GetExtension(fileDir);
+                        File.Move(fileDir, newFileDir);
+                        m_movieDatabase.AddMovie(movie.Name, movie.ID, newFileDir);
+                        m_downloadDatabase.RemoveDownload(item.ID);
+
+                        //THIS IS FOR TESTING
+                        string movieFileDir = await m_movieDatabase.GetMovieDirectoryAsync(movie.ID);
                         ProcessStartInfo file = new ProcessStartInfo();
-                        file.FileName = fileDir;
+                        file.FileName = movieFileDir;
                         file.UseShellExecute = true;
                         Process.Start(file);
                     }
@@ -92,13 +104,22 @@ namespace TobesMediaCore.Network
             return "";
         }
 
-        public async Task DownloadMovieByIDAsync(string nzbID)
+        public async Task PlayMovieByIDAsync(string imdbID)
         {
-            string nzbLink = await m_nzbGeekManager.GetLinkByNzbIdAsync(nzbID);
+            string fileDir = await m_movieDatabase.GetMovieDirectoryAsync(imdbID);
+            ProcessStartInfo file = new ProcessStartInfo();
+            file.FileName = fileDir;
+            file.UseShellExecute = true;
+            Process.Start(file);
+        }
+
+        public async Task DownloadMovieByIDAsync(string imdbID)
+        {
+            string nzbLink = await m_nzbGeekManager.GetLinkByNzbIdAsync(imdbID);
             int id = m_nzbgetManager.DownloadMovieByNzbLink(nzbLink);
             m_currentDownloads.Add(id, new DownloadItem());
-            MediaBase movie = await GetMovieByIDAsync("tt" + nzbID);
-            m_movieDatabase.AddMovie(movie.Name, id, nzbID);
+            MediaBase movie = await GetMovieByIDAsync("tt" + imdbID);
+            m_downloadDatabase.AddDownload(id, imdbID);
         }
 
         public async Task<MediaBase> GetMovieByIDAsync(string imdbID)

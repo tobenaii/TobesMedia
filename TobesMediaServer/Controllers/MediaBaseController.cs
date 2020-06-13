@@ -31,6 +31,12 @@ namespace TobesMediaServer.Controllers
             await m_mediaBaseRequest.DownloadMovieByIDAsync(id);
         }
 
+        [Route("media/play/movie/{id}")]
+        public async Task PlayMovieByIDAsync(string id)
+        {
+
+        }
+
         [Route("media/get/movies/{name}")]
         public async IAsyncEnumerable<string> GetMoviesByNameAsync(string name)
         {

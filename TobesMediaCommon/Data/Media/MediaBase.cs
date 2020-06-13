@@ -14,6 +14,7 @@ namespace TobesMediaCore.Data.Media
         public string Description;
         public string PosterURL;
         public string ID;
+        public bool IsDownloaded;
 
         public MediaBase() { }
 

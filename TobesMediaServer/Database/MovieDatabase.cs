@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,22 +13,28 @@ namespace TobesMediaServer.Database
 
         public MovieDatabase()
         {
-            SQLiteConnection.CreateFile("MyDatabase.sqlite");
-            m_dbConnection = new SQLiteConnection("Data Source=MyDatabase.sqlite;Version=3;");
+            m_dbConnection = new SQLiteConnection("Data Source=MovieDatabase.sqlite;Version=3;");
             m_dbConnection.Open();
 
-            string sql = "create table movies (name text, nzbID int, imdbID text, downloaded int, progress int, directory text, fileName text)";
+            string sql = "create table if not exists movies (name text, imdbID text, fileDir text)";
 
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
-            command.ExecuteNonQuery();            
+            command.ExecuteNonQuery();
         }
 
-        public void AddMovie(string name, int nzbID, string imdbID)
+        public void AddMovie(string name, string imdbID, string fileDir)
         {
-            string sql = $"insert into movies (name, nzbID, imdbID, downloaded, progress, directory, fileName) values ('{name}', {nzbID}, '{imdbID}', 0, 0, 'undefined', 'undefined')";
+            string sql = $"insert into movies (name, imdbID, fileDir) values ('{name}', '{imdbID}', '{fileDir}')";
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
-            command = new SQLiteCommand(sql, m_dbConnection);
             command.ExecuteNonQuery();
+        }
+
+        public async Task<string> GetMovieDirectoryAsync(string imdbID)
+        {
+            string sql = $"select fileDir from movies where imdbID='{imdbID}'";
+            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+            object dir = await command.ExecuteScalarAsync();
+            return dir.ToString();
         }
 
         ~MovieDatabase()
