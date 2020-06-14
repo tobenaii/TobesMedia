@@ -11,6 +11,7 @@ using TobesMediaServer.NZBGet;
 using TobesMediaServer.OMDB;
 using TobesMediaServer.NZBGeek;
 using TobesMediaServer.Database;
+using TobesMediaServer.ffmpeg;
 
 namespace TobesMediaCore.Network
 {
@@ -36,9 +37,11 @@ namespace TobesMediaCore.Network
         private NzbGeekManager m_nzbGeekManager = new NzbGeekManager();
         private MovieDatabase m_movieDatabase = new MovieDatabase();
         private DownloadDatabase m_downloadDatabase = new DownloadDatabase();
+        private VideoConverter m_videoConverter = new VideoConverter();
 
         private System.Timers.Timer m_timer = new System.Timers.Timer();
         private Dictionary<int, DownloadItem> m_currentDownloads = new Dictionary<int, DownloadItem>();
+        private string m_rootDirectory = "C:/MediaServer/Movies/";
 
         public MediaRequest()
         {
@@ -46,6 +49,17 @@ namespace TobesMediaCore.Network
             m_timer.Interval = 1000; // in miliseconds
             m_timer.AutoReset = true;
             m_timer.Enabled = true;
+        }
+
+        public async Task<string> GetMovieDirectoryByIDAsync(string id)
+        {
+            string dir = await m_movieDatabase.GetMovieDirectoryAsync(id);
+            return dir;
+        }
+
+        public async Task<bool> MovieExistsAsync(string id)
+        {
+            return await m_movieDatabase.MovieExistsAsync(id);
         }
 
 #pragma warning disable VSTHRD100 // Avoid async void methods
@@ -57,20 +71,27 @@ namespace TobesMediaCore.Network
                 if (m_currentDownloads.ContainsKey(item.ID))
                 {
                     m_currentDownloads[item.ID] = item;
+                    Console.Clear();
                     Console.WriteLine(item.FileName + ": " + item.Progress + "%");
                     if (item.IsCompleted)
                     {
                         m_currentDownloads.Remove(item.ID);
-                        string fileDir = FindMediaFileRecursive(item.Directory);
-                        fileDir = fileDir.Replace('\\', '/');
+                        string intFilePath = FindMediaFileRecursive(item.Directory);
+                        intFilePath = intFilePath.Replace('\\', '/');
+
                         string imdbID = m_downloadDatabase.GetImdbID(item.ID);
-                        MediaBase movie = await GetMovieByIDAsync("tt" + imdbID);
-                        movie.IsDownloaded = true;
-                        string newDir = $"C:/MediaServer/Movies/{movie.Name}/";
+                        MediaBase movie = await GetMovieByIDAsync(imdbID);
+
+                        string newDir = m_rootDirectory + FixDirectory(movie.Name);
                         Directory.CreateDirectory(newDir);
-                        string newFileDir = newDir + movie.Name + Path.GetExtension(fileDir);
-                        File.Move(fileDir, newFileDir);
-                        m_movieDatabase.AddMovie(movie.Name, movie.ID, newFileDir);
+
+                        string newFilePath = newDir + "/" + FixDirectory(movie.Name) + Path.GetExtension(intFilePath);
+                        File.Move(intFilePath, newFilePath);
+
+                        //string convertedFilePath = await m_videoConverter.ConvertToMp4Async(newFilePath);
+
+                        movie.IsDownloaded = true;
+                        m_movieDatabase.AddMovie(movie.Name, movie.ID, newFilePath);
                         m_downloadDatabase.RemoveDownload(item.ID);
 
                         //THIS IS FOR TESTING
@@ -83,6 +104,12 @@ namespace TobesMediaCore.Network
                 }
             }
         }
+
+        private string FixDirectory(string dir)
+        {
+            return string.Concat(dir.Split(Path.GetInvalidFileNameChars()));
+        }
+
 #pragma warning restore VSTHRD100 // Avoid async void methods
 
         private string[] m_videoFormats = new string[] { ".mp4", ".mkv", ".avi", ".m4a", ".m4v", ".f4v", ".wmv" };
@@ -124,7 +151,8 @@ namespace TobesMediaCore.Network
 
         public async Task<MediaBase> GetMovieByIDAsync(string imdbID)
         {
-            return await m_omdbManager.GetMovieByIDAsync(imdbID);
+            MediaBase movie = await m_omdbManager.GetMovieByIDAsync(imdbID);
+            return movie;
         }
 
         public async Task<List<MediaBase>> GetMoviesByNameAsync(string name)

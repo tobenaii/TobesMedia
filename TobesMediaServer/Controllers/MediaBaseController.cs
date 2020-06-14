@@ -32,8 +32,22 @@ namespace TobesMediaServer.Controllers
         }
 
         [Route("media/play/movie/{id}")]
-        public async Task PlayMovieByIDAsync(string id)
+        public async Task<FileResult> PlayMovieByIDAsync(string id)
         {
+            Console.WriteLine(id);
+            string movieDir;
+            if (id[0] == 't')
+            {
+                movieDir = await m_mediaBaseRequest.GetMovieDirectoryByIDAsync(id);
+                PhysicalFileResult file = PhysicalFile(movieDir, "application/x-mpegURL", true);
+                return file;
+            }
+            else
+            {
+                movieDir = @"C:/MediaServer/Movies/Guardians of the Galaxy Vol. 2/" + id;
+                PhysicalFileResult file = PhysicalFile(movieDir, "application/x-mpegURL", true);
+                return file;
+            }
 
         }
 
@@ -43,6 +57,8 @@ namespace TobesMediaServer.Controllers
             List<MediaBase> movies = await m_mediaBaseRequest.GetMoviesByNameAsync(name);
             foreach (MediaBase media in movies)
             {
+                bool movieExists = await m_mediaBaseRequest.MovieExistsAsync(media.ID);
+                media.IsDownloaded = movieExists;
                 yield return JsonConvert.SerializeObject(media);
             }
         }
@@ -51,6 +67,8 @@ namespace TobesMediaServer.Controllers
         public async Task<ActionResult<string>> GetMovieByIDAsync(string id)
         {
             MediaBase mediaBase = await m_mediaBaseRequest.GetMovieByIDAsync(id);
+            bool movieExists = await m_mediaBaseRequest.MovieExistsAsync(id);
+            mediaBase.IsDownloaded = movieExists;
             return JsonConvert.SerializeObject(mediaBase);
         }
     }

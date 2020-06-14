@@ -3,28 +3,40 @@
 @using TobesMediaCore.Network;
 @using System.Net.Http
 @inject HttpClient Http
+@inject IJSRuntime  JSRuntime;
 
-<h3>Movies</h3>
-<input @bind="SearchTerm"/>
+@*<h3>Movies</h3>
+<input @bind="SearchTerm" />
 @if (movies.List.Count == 0)
 {
     <p>Loading...</p>
 }
-else
+else if (!m_isPlaying)
 {
-<table>
-    @foreach (MediaBase movie in movies.List)
-    {
-        <tr>@movie.Name</tr>
-        <tr><input type="image" src=@movie.PosterURL @onclick="(() => DownloadMovie(movie))"/></tr>
-    }
-</table>
-}
+    <table>
+        @foreach (MediaBase movie in movies.List)
+        {
+            <tr>@movie.Name</tr>
+            <tr>@movie.IsDownloaded</tr>
+            @if (!movie.IsDownloaded)
+            {
+                <tr><input type="image" src=@movie.PosterURL @onclick="(() => DownloadMovie(movie))" /></tr>
+            }
+            else
+            {
+                <tr><input type="image" src=@movie.PosterURL @onclick="(() => PlayMovie(movie))" /></tr>
+            }
+        }
+    </table>
+}*@
 
 @code {
     private string m_searchTerm;
-    private string SearchTerm {get { return m_searchTerm; } set { m_searchTerm = value; LoadMoviesByName(); } }
+    private string SearchTerm { get { return m_searchTerm; } set { m_searchTerm = value; LoadMoviesByName(); } }
+    private bool m_isPlaying;
+    private string m_videoURL;
     MediaBaseList movies = new MediaBaseList();
+    ElementReference playerRef;
 
     protected override void OnInitialized()
     {
@@ -34,6 +46,13 @@ else
     private async void DownloadMovie(MediaBase mediaBase)
     {
         await mediaBase.DownloadMovie(Http);
+    }
+
+    private void PlayMovie(MediaBase mediaBase)
+    {
+        m_isPlaying = true;
+        m_videoURL = "https://localhost:5001/api/media/play/movie/" + mediaBase.ID;
+        UpdateVideo(m_videoURL);
     }
 
     private void UpdateSearch()
@@ -48,6 +67,11 @@ else
         Console.WriteLine(movie.ID);
         movies.List.Add(movie);
         StateHasChanged();
+    }
+
+    private void UpdateVideo(string source)
+    {
+        (JSRuntime as IJSInProcessRuntime).InvokeVoid("toggleVideo", source);
     }
 
     private async void LoadMoviesByName()

@@ -35,6 +35,7 @@ namespace TobesMediaCore.Data.Media
             Description = mediaBase.Description;
             PosterURL = mediaBase.PosterURL;
             ID = mediaBase.ID;
+            IsDownloaded = mediaBase.IsDownloaded;
         }
 
         public async Task DownloadMovie(HttpClient client)

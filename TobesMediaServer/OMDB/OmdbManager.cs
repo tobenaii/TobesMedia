@@ -14,6 +14,8 @@ namespace TobesMediaServer.OMDB
 
         public async Task<MediaBase> GetMovieByIDAsync(string imdbID)
         {
+            if (imdbID[0] != 't')
+                imdbID = "tt" + imdbID;
             var message = await m_client.GetAsync("https://www.omdbapi.com/?i=" + imdbID + "&apikey=9c95fc1d");
             JObject json = JObject.Parse(await message.Content.ReadAsStringAsync());
             MediaBase movie = ParseMediaFromJson(json);

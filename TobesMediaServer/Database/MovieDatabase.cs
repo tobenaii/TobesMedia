@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,14 @@ namespace TobesMediaServer.Database
             string sql = $"insert into movies (name, imdbID, fileDir) values ('{name}', '{imdbID}', '{fileDir}')";
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
             command.ExecuteNonQuery();
+        }
+
+        public async Task<bool> MovieExistsAsync(string imdbID)
+        {
+            string sql = $"select imdbID from movies where imdbID='{imdbID}'";
+            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+            DbDataReader exists = await command.ExecuteReaderAsync();
+            return exists.HasRows;
         }
 
         public async Task<string> GetMovieDirectoryAsync(string imdbID)
