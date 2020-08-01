@@ -14,7 +14,10 @@ namespace TobesMediaCore.Data.Media
         public string Description;
         public string PosterURL;
         public string ID;
+        public float Progress;
+        public bool IsDownloading;
         public bool IsDownloaded;
+        public bool IsTranscoding;
 
         public MediaBase() { }
 
@@ -36,6 +39,18 @@ namespace TobesMediaCore.Data.Media
             PosterURL = mediaBase.PosterURL;
             ID = mediaBase.ID;
             IsDownloaded = mediaBase.IsDownloaded;
+        }
+
+        public async Task UpdateProgress(HttpClient client)
+        {
+            HttpResponseMessage response = await client.GetAsync("https://localhost:5001/api/media/get/movie/isDownloading/" + ID);
+            bool isDownloading = (bool)await response.Content.ReadAsAsync(typeof(bool));
+            IsDownloading = isDownloading;
+            if (!isDownloading)
+                return;
+            response = await client.GetAsync("https://localhost:5001/api/media/get/movie/progress/" + ID);
+            int progress = (int)await response.Content.ReadAsAsync(typeof(int));
+            Progress = progress;
         }
 
         public async Task DownloadMovie(HttpClient client)

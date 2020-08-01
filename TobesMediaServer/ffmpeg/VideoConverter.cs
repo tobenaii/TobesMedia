@@ -6,11 +6,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TobesMediaCore.Data.Media;
 
 namespace TobesMediaServer.ffmpeg
 {
     public class VideoConverter
     {
+        private MediaBase m_mediaBase;
         Engine ffmpeg;
         private static string m_binPath = "ffmpeg/binaries/ffmpeg.exe";
         public VideoConverter()
@@ -19,10 +21,11 @@ namespace TobesMediaServer.ffmpeg
             ffmpeg.Progress += OnProgress;
         }
 
-        public async Task<string> ConvertToMp4Async(string filePath)
+        public async Task<string> ConvertToMp4Async(string filePath, MediaBase media = null)
         {
             if (Path.GetExtension(filePath) == ".mp4")
                 return filePath;
+            m_mediaBase = media;
             string newFilePath = Path.ChangeExtension(filePath, ".mp4");
             var inputFile = new MediaFile(filePath);
             var outputFile = new MediaFile(newFilePath);
@@ -36,13 +39,8 @@ namespace TobesMediaServer.ffmpeg
         private void OnProgress(object sender, ConversionProgressEventArgs e)
         {
             Console.Clear();
-            Console.WriteLine("[{0} => {1}]", e.Input.FileInfo.Name, e.Output.FileInfo.Name);
-            Console.WriteLine("Bitrate: {0}", e.Bitrate);
-            Console.WriteLine("Fps: {0}", e.Fps);
-            Console.WriteLine("Frame: {0}", e.Frame);
-            Console.WriteLine("ProcessedDuration: {0}", e.ProcessedDuration);
-            Console.WriteLine("Size: {0} kb", e.SizeKb);
-            Console.WriteLine("TotalDuration: {0}\n", e.TotalDuration);
+            if (m_mediaBase != null)
+                m_mediaBase.Progress = (e.TotalDuration.Seconds / e.ProcessedDuration.Seconds) * 100.0f;
         }
     }
 }

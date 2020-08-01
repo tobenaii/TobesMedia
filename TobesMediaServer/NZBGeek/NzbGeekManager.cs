@@ -18,8 +18,10 @@ namespace TobesMediaServer.NZBGeek
 
         public async Task<string> GetLinkByNzbIdAsync(string id)
         {
-            var message = await m_client.GetAsync("https://api.nzbgeek.info/api?t=movie&q=1080p&maxsize=5242880000&imdbid=" + id.Replace("TT", "") + "&limit=50&o=json&apikey=3d98d8eaf835802e503a0a936f37ce7c");
-            JObject jsonNZB = JObject.Parse(await message.Content.ReadAsStringAsync());
+            string url = "https://api.nzbgeek.info/api?t=movie&q=1080p&maxsize=5242880000&imdbid=" + id.Replace("tt", "").Replace("TT", "") + "&limit=50&o=json&apikey=3d98d8eaf835802e503a0a936f37ce7c";
+            var message = await m_client.GetAsync(url);
+            string json = await message.Content.ReadAsStringAsync();
+            JObject jsonNZB = JObject.Parse(json);
             JArray array = JArray.Parse(jsonNZB["channel"]["item"].ToString());
             string link = array[0]["link"].ToString().Replace(";", "&");
             return link;

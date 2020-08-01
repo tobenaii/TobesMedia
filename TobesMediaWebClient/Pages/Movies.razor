@@ -2,10 +2,11 @@
 @using TobesMediaCore.Data.Media;
 @using TobesMediaCore.Network;
 @using System.Net.Http
+@using System.Timers;
 @inject HttpClient Http
 @inject IJSRuntime  JSRuntime;
 
-@*<h3>Movies</h3>
+<h3>Movies</h3>
 <input @bind="SearchTerm" />
 @if (movies.List.Count == 0)
 {
@@ -13,22 +14,22 @@
 }
 else if (!m_isPlaying)
 {
-    <table>
-        @foreach (MediaBase movie in movies.List)
+<table>
+    @foreach (MediaBase movie in movies.List)
+    {
+        <tr>@movie.Name</tr>
+        <tr><progress value="@movie.Progress" max="100"></progress></tr>
+        @if (!movie.IsDownloaded)
         {
-            <tr>@movie.Name</tr>
-            <tr>@movie.IsDownloaded</tr>
-            @if (!movie.IsDownloaded)
-            {
-                <tr><input type="image" src=@movie.PosterURL @onclick="(() => DownloadMovie(movie))" /></tr>
-            }
-            else
-            {
-                <tr><input type="image" src=@movie.PosterURL @onclick="(() => PlayMovie(movie))" /></tr>
-            }
+            <tr><input type="image" src=@movie.PosterURL @onclick="(() => DownloadMovie(movie))" /></tr>
         }
-    </table>
-}*@
+        else if (!movie.IsDownloading)
+        {
+            <tr><input type="image" src=@movie.PosterURL @onclick="(() => PlayMovie(movie))" /></tr>
+        }
+    }
+</table>
+}
 
 @code {
     private string m_searchTerm;
@@ -38,9 +39,26 @@ else if (!m_isPlaying)
     MediaBaseList movies = new MediaBaseList();
     ElementReference playerRef;
 
+    private System.Timers.Timer m_timer = new System.Timers.Timer();
+
     protected override void OnInitialized()
     {
         LoadMovies();
+        m_timer = new System.Timers.Timer();
+        m_timer.Elapsed += UpdateData;
+        m_timer.Interval = 1000; // in miliseconds
+        m_timer.AutoReset = true;
+        m_timer.Enabled = true;
+    }
+
+    private void UpdateData(object sender, ElapsedEventArgs e)
+    {
+        foreach (MediaBase movie in movies.List)
+        {
+            movie.UpdateProgress(Http);
+            if (movie.IsDownloading)
+                StateHasChanged();
+        }
     }
 
     private async void DownloadMovie(MediaBase mediaBase)

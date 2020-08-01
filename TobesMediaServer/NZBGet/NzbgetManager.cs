@@ -64,17 +64,24 @@ namespace TobesMediaServer.NZBGet
                 {
                         0,
                 };
-            string queueItemsJson = await webClient.UploadStringTaskAsync(new Uri("http://127.0.0.1:6789/jsonrpc/listgroups"), JsonConvert.SerializeObject(request));
+            try
+            {
+                string queueItemsJson = await webClient.UploadStringTaskAsync(new Uri("http://127.0.0.1:6789/jsonrpc/listgroups"), JsonConvert.SerializeObject(request));
 
-            request.method = "history";
-            request.parms = new object[]
-                {
+                request.method = "history";
+                request.parms = new object[]
+                    {
                     false,
-                };
-            string historyItemsJson = await webClient.UploadStringTaskAsync(new Uri("http://127.0.0.1:6789/jsonrpc/listgroups"), JsonConvert.SerializeObject(request));
-            List<DownloadItem> downloadItems = ParseQueueItems(queueItemsJson);
-            downloadItems.AddRange(ParseHistoryItems(historyItemsJson));
-            return downloadItems;
+                    };
+                string historyItemsJson = await webClient.UploadStringTaskAsync(new Uri("http://127.0.0.1:6789/jsonrpc/listgroups"), JsonConvert.SerializeObject(request));
+                List<DownloadItem> downloadItems = ParseQueueItems(queueItemsJson);
+                downloadItems.AddRange(ParseHistoryItems(historyItemsJson));
+                return downloadItems;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private List<DownloadItem> ParseQueueItems(string json)
