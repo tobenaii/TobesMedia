@@ -6,7 +6,8 @@
 @inject HttpClient Http
 @inject IJSRuntime  JSRuntime;
 
-<h3>Movies</h3>
+<Banner></Banner>
+@*<h3>Movies</h3>
 <input @bind="SearchTerm" />
 @if (movies.List.Count == 0)
 {
@@ -29,7 +30,7 @@ else if (!m_isPlaying)
         }
     }
 </table>
-}
+}*@
 
 @code {
     private string m_searchTerm;
@@ -41,15 +42,15 @@ else if (!m_isPlaying)
 
     private System.Timers.Timer m_timer = new System.Timers.Timer();
 
-    protected override void OnInitialized()
-    {
-        LoadMovies();
-        m_timer = new System.Timers.Timer();
-        m_timer.Elapsed += UpdateData;
-        m_timer.Interval = 1000; // in miliseconds
-        m_timer.AutoReset = true;
-        m_timer.Enabled = true;
-    }
+    //protected override void OnInitialized()
+    //{
+    //    LoadMovies();
+    //    m_timer = new System.Timers.Timer();
+    //    m_timer.Elapsed += UpdateData;
+    //    m_timer.Interval = 1000; // in miliseconds
+    //    m_timer.AutoReset = true;
+    //    m_timer.Enabled = true;
+    //}
 
     private void UpdateData(object sender, ElapsedEventArgs e)
     {
