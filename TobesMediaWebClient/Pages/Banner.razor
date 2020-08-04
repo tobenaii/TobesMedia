@@ -1,12 +1,19 @@
 ﻿@using TobesMediaWebClient.Pages.Buttons
+@inherits LayoutComponentBase
 
-    <div class="flex">
-        <BannerButton Text="Movies"></BannerButton>
-        <BannerButton Text="Shows"></BannerButton>
-        <BannerButton Text="Anime"></BannerButton>
-        <input style="border:solid; border-color:gray" class="text-white border-gray-600 border-solid focus:border-white bg-transparent" />
+    <div class="grid">
+        <div class="flex-1 row-auto">
+            <BannerButton Text="Movies"></BannerButton>
+            <BannerButton Text="Shows"></BannerButton>
+            <BannerButton Text="Anime"></BannerButton>
+            <input @bind="SearchTerm" style="border:solid; border-color:gray" class="text-white border-gray-600 border-solid focus:border-white bg-transparent" />
+        </div>
+        <div class="flex flex-wrap row-auto w-screen">
+            <CascadingValue Value="SearchTerm">
+                @Body
+            </CascadingValue>
+        </div>
     </div>
-
 @code {
-
+    private string SearchTerm { get; set; }
 }

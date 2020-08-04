@@ -15,6 +15,8 @@ namespace TobesMediaCore.Data.Media
         public async Task LoadMoviesByName(string name, HttpClient client)
         {
             HttpResponseMessage response = await client.GetAsync("https://localhost:5001/api/media/get/movies/" + name);
+            if (!response.IsSuccessStatusCode)
+                return;
             string jsonObj = await response.Content.ReadAsStringAsync();
             List<string> jsonObjList = JsonConvert.DeserializeObject<List<string>>(jsonObj);
             foreach (string json in jsonObjList)
