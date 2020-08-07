@@ -15,6 +15,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using TobesMediaCore.Data.Media;
 using TobesMediaCore.Network;
+using TobesMediaServer.Base;
 using TobesMediaServer.Database;
 using TobesMediaServer.ffmpeg;
 using TobesMediaServer.NZBGet;
@@ -24,18 +25,23 @@ namespace TobesMediaServer.Controllers
 {
     [Route("api/")]
     [ApiController]
-    public class MediaBaseController : ControllerBase
+    public class MovieController : ControllerBase
     {
-        private static MediaRequest m_mediaBaseRequest = new MediaRequest();
+        private IMediaRequest m_mediaRequset;
         private static VideoConverter m_videoConverter = new VideoConverter();
         private static MovieDatabase m_movieDatabase = new MovieDatabase();
         private static OmdbManager m_omdbManager = new OmdbManager();
+
+        public MovieController(IMediaRequest mediaRequest)
+        {
+            m_mediaRequset = mediaRequest;
+        }
 
         [Route("media/request/movie/{id}")]
         public async Task RequestMovieByIDAsync(string id)
         {
             MediaBase media = await m_omdbManager.GetMovieByIDAsync(id);
-            await m_mediaBaseRequest.DownloadMovieByIDAsync(media);
+            await m_mediaRequset.DownloadMovieByIDAsync(media);
         }
 
         [Route("media/play/movie/{id}")]
@@ -62,13 +68,13 @@ namespace TobesMediaServer.Controllers
         [Route("media/get/movie/progress/{id}")]
         public int GetMovieProgressByID(string id)
         {
-            return m_mediaBaseRequest.GetProgress(id);
+            return m_mediaRequset.GetProgress(id);
         }
 
         [Route("media/get/movie/isDownloading/{id}")]
         public bool GetMovieDownloadingByID(string id)
         {
-            return m_mediaBaseRequest.IsDownloading(id);
+            return m_mediaRequset.IsDownloading(id);
         }
 
         [Route("media/get/movie/{id}")]

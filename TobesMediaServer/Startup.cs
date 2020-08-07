@@ -10,7 +10,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TobesMediaCore.Network;
+using TobesMediaServer.Base;
 using TobesMediaServer.Database;
+using TobesMediaServer.NZBGet;
 
 namespace TobesMediaServer
 {
@@ -33,6 +36,8 @@ namespace TobesMediaServer
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
+            NZBgetManager nzbGet = new NZBgetManager();
+            services.Add(new ServiceDescriptor(typeof(IMediaRequest), new MovieRequest(nzbGet)));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

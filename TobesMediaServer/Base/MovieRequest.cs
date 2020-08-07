@@ -11,6 +11,7 @@ using TobesMediaServer.OMDB;
 using TobesMediaServer.NZBGeek;
 using TobesMediaServer.Database;
 using TobesMediaServer.ffmpeg;
+using TobesMediaServer.NZBManager;
 
 namespace TobesMediaCore.Network
 {
@@ -29,39 +30,30 @@ namespace TobesMediaCore.Network
         public string Name;
         public string Value;
     }
-    public class MediaRequest
+    public class MovieRequest : IMediaRequest
     {
-        private NZBgetManager m_nzbgetManager = new NZBgetManager();
+        private INzbManager m_nzbManager;
         private NzbGeekManager m_nzbGeekManager = new NzbGeekManager();
         private DownloadDatabase m_downloadDatabase = new DownloadDatabase();
+        private static VideoConverter m_videoConverter = new VideoConverter();
 
         private System.Timers.Timer m_timer = new System.Timers.Timer();
         private Dictionary<int, MediaBase> m_currentDownloads = new Dictionary<int, MediaBase>();
         private string m_rootDirectory = "C:/MediaServer/Movies/";
 
-        public MediaRequest()
+        public MovieRequest(INzbManager nzbManager)
         {
+            m_nzbManager = nzbManager;
             m_timer.Elapsed += UpdateData;
             m_timer.Interval = 1000; // in miliseconds
             m_timer.AutoReset = true;
             m_timer.Enabled = true;
         }
 
-        //public async Task<string> GetMovieDirectoryByIDAsync(string id)
-        //{
-        //    string dir = await m_movieDatabase.GetMovieDirectoryAsync(id);
-        //    return dir;
-        //}
-
-        //public async Task<bool> MovieExistsAsync(string id)
-        //{
-        //    return await m_movieDatabase.MovieExistsAsync(id);
-        //}
-
 #pragma warning disable VSTHRD100 // Avoid async void methods
         private async void UpdateData(object sender, ElapsedEventArgs e)
         {
-            List<DownloadItem> downloadItems = await m_nzbgetManager.GetDownloadItemsAsync();
+            List<DownloadItem> downloadItems = await m_nzbManager.GetDownloadItemsAsync();
             if (downloadItems == null)
                 return;
             foreach (DownloadItem item in downloadItems)
@@ -87,7 +79,7 @@ namespace TobesMediaCore.Network
                         string newFilePath = newDir + "/" + FixDirectory(media.Name) + Path.GetExtension(intFilePath);
                         File.Move(intFilePath, newFilePath);
                         m_downloadDatabase.RemoveDownload(item.ID);
-                        media.Progress = 100;
+                        media.Progress = 50;
                         //movie.IsDownloaded = true;
                         //string convertedFilePath = await m_videoConverter.ConvertToMp4Async(newFilePath);
                         //if (convertedFilePath != newFilePath)
@@ -134,7 +126,7 @@ namespace TobesMediaCore.Network
         public async Task DownloadMovieByIDAsync(MediaBase media)
         {
             string nzbLink = await m_nzbGeekManager.GetLinkByNzbIdAsync(media.ID);
-            int id = m_nzbgetManager.DownloadMovieByNzbLink(nzbLink);
+            int id = m_nzbManager.DownloadMovieByNzbLink(nzbLink);
             m_currentDownloads.Add(id, media);
             m_downloadDatabase.AddDownload(id, media.ID);
         }

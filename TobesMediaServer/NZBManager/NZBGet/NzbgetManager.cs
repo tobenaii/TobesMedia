@@ -7,10 +7,11 @@ using TobesMediaCore.Network;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using TobesMediaServer.Base;
+using TobesMediaServer.NZBManager;
 
 namespace TobesMediaServer.NZBGet
 {
-    public class NZBgetManager
+    public class NZBgetManager : INzbManager
     {
         private HttpClient m_client;
 
