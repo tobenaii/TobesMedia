@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using TobesMediaCore.Data.Media;
 using TobesMediaCore.Network;
-using TobesMediaServer.Base;
+using TobesMediaServer.MediaRequest;
 using TobesMediaServer.Database;
 using TobesMediaServer.ffmpeg;
 using TobesMediaServer.NZBGet;
@@ -27,63 +27,36 @@ namespace TobesMediaServer.Controllers
     [ApiController]
     public class MovieController : ControllerBase
     {
-        private IMediaRequest m_mediaRequset;
-        private static VideoConverter m_videoConverter = new VideoConverter();
-        private static MovieDatabase m_movieDatabase = new MovieDatabase();
-        private static OmdbManager m_omdbManager = new OmdbManager();
+        //private IMovieRequest m_movieRequest;
+        //private static VideoConverter m_videoConverter = new VideoConverter();
+        //private static MySqlMovieDatabase m_movieDatabase = new MySqlMovieDatabase();
 
-        public MovieController(IMediaRequest mediaRequest)
-        {
-            m_mediaRequset = mediaRequest;
-        }
+        //public MovieController(IMovieRequest mediaRequest)
+        //{
+        //    m_movieRequest = mediaRequest;
+        //}
 
-        [Route("media/request/movie/{id}")]
-        public async Task RequestMovieByIDAsync(string id)
-        {
-            MediaBase media = await m_omdbManager.GetMovieByIDAsync(id);
-            await m_mediaRequset.DownloadMovieByIDAsync(media);
-        }
+        //[Route("media/play/movie/{id}")]
+        //public async Task<FileResult> PlayMovieByIDAsync(string id)
+        //{
+        //    Console.WriteLine(id);
+        //    string movieDir = await m_movieDatabase.GetMovieDirectoryAsync(id);
+        //    PhysicalFileResult file = PhysicalFile(movieDir, "application/x-mpegURL", true);
+        //    return file;
+        //}
 
-        [Route("media/play/movie/{id}")]
-        public async Task<FileResult> PlayMovieByIDAsync(string id)
-        {
-            Console.WriteLine(id);
-            string movieDir = await m_movieDatabase.GetMovieDirectoryAsync(id);
-            PhysicalFileResult file = PhysicalFile(movieDir, "application/x-mpegURL", true);
-            return file;
-        }
+        //[Route("media/get/movie/progress/{id}")]
+        //public int GetMovieProgressByID(string id)
+        //{
+        //    return 0;
+        //    //return m_movieRequest.GetProgress(id);
+        //}
 
-        [Route("media/get/movies/{name}")]
-        public async IAsyncEnumerable<string> GetMoviesByNameAsync(string name)
-        {
-            List<MediaBase> movies = await m_omdbManager.GetMoviesByNameAsync(name);
-            foreach (MediaBase media in movies)
-            {
-                bool movieExists = await m_movieDatabase.MovieExistsAsync(media.ID);
-                media.IsDownloaded = movieExists;
-                yield return JsonConvert.SerializeObject(media);
-            }
-        }
-
-        [Route("media/get/movie/progress/{id}")]
-        public int GetMovieProgressByID(string id)
-        {
-            return m_mediaRequset.GetProgress(id);
-        }
-
-        [Route("media/get/movie/isDownloading/{id}")]
-        public bool GetMovieDownloadingByID(string id)
-        {
-            return m_mediaRequset.IsDownloading(id);
-        }
-
-        [Route("media/get/movie/{id}")]
-        public async Task<ActionResult<string>> GetMovieByIDAsync(string id)
-        {
-            MediaBase media = await m_omdbManager.GetMovieByIDAsync(id);
-            bool movieExists = await m_movieDatabase.MovieExistsAsync(media.ID);
-            media.IsDownloaded = movieExists;
-            return JsonConvert.SerializeObject(media);
-        }
+        //[Route("media/get/movie/isDownloading/{id}")]
+        //public bool GetMovieDownloadingByID(string id)
+        //{
+        //    return false;
+        //    //return m_movieRequest.IsDownloading(id);
+        //}
     }
 }

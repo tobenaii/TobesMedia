@@ -7,40 +7,47 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TobesMediaCore.Data.Media;
+using TobesMediaServer.MediaPipeline;
 
 namespace TobesMediaServer.ffmpeg
 {
-    public class VideoConverter
+    public class FfmpegTranscodeService : IMediaService
     {
         private MediaBase m_mediaBase;
         Engine ffmpeg;
-        private static string m_binPath = "ffmpeg/binaries/ffmpeg.exe";
-        public VideoConverter()
+        private static string m_binPath = "MediaPipeline/MediaTranscoding/binaries/ffmpeg.exe";
+        public FfmpegTranscodeService()
         {
             ffmpeg = new Engine(m_binPath);
             ffmpeg.Progress += OnProgress;
         }
 
-        public async Task<string> ConvertToMp4Async(string filePath, MediaBase media = null)
+        public async Task ProcessMediaAsync(MediaBase media)
         {
+            string filePath = media.filePath;
             if (Path.GetExtension(filePath) == ".mp4")
-                return filePath;
+                return;
+            Console.WriteLine("Processing Transcode");
             m_mediaBase = media;
             string newFilePath = Path.ChangeExtension(filePath, ".mp4");
             var inputFile = new MediaFile(filePath);
             var outputFile = new MediaFile(newFilePath);
 
             var options = new ConversionOptions();
+            Console.WriteLine("Transcoding");
             await ffmpeg.ConvertAsync(inputFile, outputFile);
             File.Delete(filePath);
-            return newFilePath;
+            media.filePath = newFilePath;
         }
 
         private void OnProgress(object sender, ConversionProgressEventArgs e)
         {
             Console.Clear();
             if (m_mediaBase != null)
-                m_mediaBase.Progress = (e.TotalDuration.Seconds / e.ProcessedDuration.Seconds) * 100.0f;
+            {
+                m_mediaBase.Progress = (int)((float)(e.ProcessedDuration.TotalSeconds / e.TotalDuration.TotalSeconds) * 100.0f);
+                Console.WriteLine($"Transcoding {m_mediaBase.Name}: {m_mediaBase.Progress}");
+            }
         }
     }
 }

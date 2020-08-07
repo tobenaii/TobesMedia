@@ -5,15 +5,16 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Timers;
 using TobesMediaCore.Data.Media;
-using TobesMediaServer.Base;
+using TobesMediaServer.MediaRequest;
 using TobesMediaServer.NZBGet;
 using TobesMediaServer.OMDB;
 using TobesMediaServer.NZBGeek;
 using TobesMediaServer.Database;
 using TobesMediaServer.ffmpeg;
 using TobesMediaServer.NZBManager;
+using TobesMediaServer.MediaPipeline;
 
-namespace TobesMediaCore.Network
+namespace TobesMediaCore.MediaRequest
 {
     [Serializable]
     public struct RPCRequest
@@ -30,18 +31,17 @@ namespace TobesMediaCore.Network
         public string Name;
         public string Value;
     }
-    public class MovieRequest : IMediaRequest
+    public class NzbDownloadService : IMediaService
     {
         private INzbManager m_nzbManager;
         private NzbGeekManager m_nzbGeekManager = new NzbGeekManager();
         private DownloadDatabase m_downloadDatabase = new DownloadDatabase();
-        private static VideoConverter m_videoConverter = new VideoConverter();
 
         private System.Timers.Timer m_timer = new System.Timers.Timer();
         private Dictionary<int, MediaBase> m_currentDownloads = new Dictionary<int, MediaBase>();
         private string m_rootDirectory = "C:/MediaServer/Movies/";
 
-        public MovieRequest(INzbManager nzbManager)
+        public NzbDownloadService(INzbManager nzbManager)
         {
             m_nzbManager = nzbManager;
             m_timer.Elapsed += UpdateData;
@@ -56,13 +56,13 @@ namespace TobesMediaCore.Network
             List<DownloadItem> downloadItems = await m_nzbManager.GetDownloadItemsAsync();
             if (downloadItems == null)
                 return;
+            Console.Clear();
             foreach (DownloadItem item in downloadItems)
             {
                 if (m_currentDownloads.ContainsKey(item.ID))
                 {
                     MediaBase media = m_currentDownloads[item.ID];
                     media.Progress = item.Progress;
-                    Console.Clear();
                     Console.WriteLine(item.FileName + ": " + item.Progress + "%");
                     if (item.IsCompleted)
                     {
@@ -79,7 +79,9 @@ namespace TobesMediaCore.Network
                         string newFilePath = newDir + "/" + FixDirectory(media.Name) + Path.GetExtension(intFilePath);
                         File.Move(intFilePath, newFilePath);
                         m_downloadDatabase.RemoveDownload(item.ID);
-                        media.Progress = 50;
+                        media.Progress = 100;
+                        media.filePath = newFilePath;
+                        media.IsDownloaded = true;
                         //movie.IsDownloaded = true;
                         //string convertedFilePath = await m_videoConverter.ConvertToMp4Async(newFilePath);
                         //if (convertedFilePath != newFilePath)
@@ -123,24 +125,18 @@ namespace TobesMediaCore.Network
             return "";
         }
 
-        public async Task DownloadMovieByIDAsync(MediaBase media)
+        public async Task ProcessMediaAsync(MediaBase media)
         {
+            Console.WriteLine("Processing Download");
             string nzbLink = await m_nzbGeekManager.GetLinkByNzbIdAsync(media.ID);
+            Console.WriteLine("Attempting Download");
             int id = m_nzbManager.DownloadMovieByNzbLink(nzbLink);
+            Console.WriteLine("Downloading");
             m_currentDownloads.Add(id, media);
             m_downloadDatabase.AddDownload(id, media.ID);
-        }
 
-        public int GetProgress(string ID)
-        {
-            MediaBase media = m_currentDownloads.Values.FirstOrDefault(x => x.ID == ID);
-            return (int)media.Progress;
-        }
-
-        public bool IsDownloading(string ID)
-        {
-            MediaBase media = m_currentDownloads.Values.FirstOrDefault(x => x.ID == ID);
-            return media != null;
+            while (!media.IsDownloaded)
+                await Task.Delay(25);
         }
     }
 }

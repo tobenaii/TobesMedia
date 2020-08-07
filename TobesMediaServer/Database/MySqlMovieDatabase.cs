@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace TobesMediaServer.Database
 {
-    public class MovieDatabase
+    public class MySqlMovieDatabase : IMovieDatabase
     {
         SQLiteConnection m_dbConnection;
 
-        public MovieDatabase()
+        public MySqlMovieDatabase()
         {
             m_dbConnection = new SQLiteConnection("Data Source=MovieDatabase.sqlite;Version=3;");
             m_dbConnection.Open();
@@ -46,7 +46,7 @@ namespace TobesMediaServer.Database
             return dir.ToString();
         }
 
-        ~MovieDatabase()
+        ~MySqlMovieDatabase()
         {
             m_dbConnection.Close();
         }

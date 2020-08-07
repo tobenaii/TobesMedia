@@ -18,6 +18,7 @@ namespace TobesMediaCore.Data.Media
         public bool IsDownloading;
         public bool IsDownloaded;
         public bool IsTranscoding;
+        public string filePath;
 
         public MediaBase() { }
 

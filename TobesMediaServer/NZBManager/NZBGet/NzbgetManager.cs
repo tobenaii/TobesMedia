@@ -6,8 +6,9 @@ using Newtonsoft.Json;
 using TobesMediaCore.Network;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
-using TobesMediaServer.Base;
+using TobesMediaServer.MediaRequest;
 using TobesMediaServer.NZBManager;
+using TobesMediaCore.MediaRequest;
 
 namespace TobesMediaServer.NZBGet
 {

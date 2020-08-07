@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TobesMediaCore.Data.Media;
 
-namespace TobesMediaServer.Base
+namespace TobesMediaServer.MediaRequest
 {
     public class DownloadItem
     {

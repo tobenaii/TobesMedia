@@ -11,9 +11,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TobesMediaCore.Network;
-using TobesMediaServer.Base;
+using TobesMediaServer.MediaRequest;
 using TobesMediaServer.Database;
 using TobesMediaServer.NZBGet;
+using TobesMediaServer.NZBManager;
+using TobesMediaCore.MediaRequest;
+using TobesMediaServer.MediaInfo;
+using TobesMediaServer.OMDB;
+using TobesMediaServer.MediaPipeline;
+using TobesMediaServer.ffmpeg;
 
 namespace TobesMediaServer
 {
@@ -36,8 +42,14 @@ namespace TobesMediaServer
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
-            NZBgetManager nzbGet = new NZBgetManager();
-            services.Add(new ServiceDescriptor(typeof(IMediaRequest), new MovieRequest(nzbGet)));
+            services.AddSingleton<IMovieInfo, OmdbMovieInfo>();
+            services.AddSingleton<IMovieDatabase, MySqlMovieDatabase>();
+            services.AddSingleton<INzbManager, NZBgetManager>();
+
+            services.AddSingleton<IMediaService, NzbDownloadService>();
+            services.AddTransient<IMediaService, FfmpegTranscodeService>();
+
+            services.AddTransient<IMediaPipeline, MoviePipeline>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

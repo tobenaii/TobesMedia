@@ -5,14 +5,15 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using TobesMediaCore.Data.Media;
+using TobesMediaServer.MediaInfo;
 
 namespace TobesMediaServer.OMDB
 {
-    public class OmdbManager
+    public class OmdbMovieInfo : IMovieInfo
     {
         HttpClient m_client = new HttpClient();
 
-        public async Task<MediaBase> GetMovieByIDAsync(string imdbID)
+        public async Task<MediaBase> GetMediaByIDAsync(string imdbID)
         {
             if (imdbID[0] != 't')
                 imdbID = "tt" + imdbID;
@@ -27,7 +28,7 @@ namespace TobesMediaServer.OMDB
             return new MediaBase(json["Title"].ToString(), "", json["Poster"].ToString(), json["imdbID"].ToString());
         }
 
-        public async Task<List<MediaBase>> GetMoviesByNameAsync(string name)
+        public async Task<List<MediaBase>> GetMediaByNameAsync(string name)
         {
             List<MediaBase> movies = new List<MediaBase>();
             name = name.Replace(" ", "+");
