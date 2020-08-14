@@ -13,7 +13,7 @@ namespace TobesMediaServer.ffmpeg
 {
     public class FfmpegTranscodeService : IMediaService
     {
-        private MediaBase m_mediaBase;
+        private MediaPipeline.MediaFile m_mediaFile;
         Engine ffmpeg;
         private static string m_binPath = "MediaPipeline/MediaTranscoding/binaries/ffmpeg.exe";
         public FfmpegTranscodeService()
@@ -22,31 +22,31 @@ namespace TobesMediaServer.ffmpeg
             ffmpeg.Progress += OnProgress;
         }
 
-        public async Task ProcessMediaAsync(MediaBase media)
+        public async Task ProcessMediaAsync(MediaPipeline.MediaFile media, MediaType type)
         {
-            string filePath = media.filePath;
+            string filePath = media.FilePath;
             if (Path.GetExtension(filePath) == ".mp4")
                 return;
             Console.WriteLine("Processing Transcode");
-            m_mediaBase = media;
+            m_mediaFile = media;
             string newFilePath = Path.ChangeExtension(filePath, ".mp4");
-            var inputFile = new MediaFile(filePath);
-            var outputFile = new MediaFile(newFilePath);
+            var inputFile = new FFmpeg.NET.MediaFile(filePath);
+            var outputFile = new FFmpeg.NET.MediaFile(newFilePath);
 
             var options = new ConversionOptions();
             Console.WriteLine("Transcoding");
             await ffmpeg.ConvertAsync(inputFile, outputFile);
             File.Delete(filePath);
-            media.filePath = newFilePath;
+            media.FilePath = newFilePath;
         }
 
         private void OnProgress(object sender, ConversionProgressEventArgs e)
         {
-            Console.Clear();
-            if (m_mediaBase != null)
+            if (m_mediaFile != null)
             {
-                m_mediaBase.Progress = (int)((float)(e.ProcessedDuration.TotalSeconds / e.TotalDuration.TotalSeconds) * 100.0f);
-                Console.WriteLine($"Transcoding {m_mediaBase.Name}: {m_mediaBase.Progress}");
+                Console.Clear();
+                m_mediaFile.Progress = (int)((float)(e.ProcessedDuration.TotalSeconds / e.TotalDuration.TotalSeconds) * 100.0f);
+                Console.WriteLine($"Transcoding {m_mediaFile.Media.Name}: {m_mediaFile.Progress}");
             }
         }
     }

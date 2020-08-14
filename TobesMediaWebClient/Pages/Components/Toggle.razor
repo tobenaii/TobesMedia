@@ -1,0 +1,21 @@
+﻿    <!-- Toggle Button -->
+<label for="toogleA" class="flex items-center border-2 border-green-900">
+    <!-- toggle -->
+    <div class="relative" @onclick="() => { IsActive = !IsActive; }">
+        <!-- line -->
+        <div class="toggle__line w-10 h-4 bg-gray-400 rounded-full shadow-inner"></div>
+        <!-- dot -->
+        <div style="top: -.25rem; left: -.25rem;" class="transition-all duration-300 transform  @(IsActive?"translate-x-full bg-green-700":"bg-white") absolute w-6 h-6  rounded-full shadow inset-y-0 left-0"></div>
+    </div>
+    <!-- label -->
+    <div class="ml-3 text-gray-700 font-medium">
+        Filter results
+    </div>
+</label>
+
+@code {
+    [Parameter]
+    public string Color { get; set; } = "Aqua";
+
+    private bool IsActive { get; set; }
+}

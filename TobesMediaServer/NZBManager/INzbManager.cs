@@ -9,6 +9,7 @@ namespace TobesMediaServer.NZBManager
     public interface INzbManager
     {
         public int DownloadMovieByNzbLink(string link);
-        public Task<List<DownloadItem>> GetDownloadItemsAsync();
+        public Task<bool> ContainsIdAsync(int id);
+        public List<DownloadItem> DownloadItems { get; }
     }
 }

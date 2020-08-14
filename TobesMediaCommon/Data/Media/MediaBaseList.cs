@@ -1,28 +1,39 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using TobesMediaCommon.Data.Media;
 using TobesMediaCore.Data.Media;
 
 namespace TobesMediaCore.Data.Media
 {
+    public enum MediaType { Movies, Shows, Anime }
+
     public class MediaBaseList
     {
+        public int Count { get; private set; }
         public List<MediaBase> List = new List<MediaBase>();
+        public int Pages { get; private set; }
 
-        public async Task LoadMoviesByName(string name, HttpClient client)
+        public async Task LoadMoviesByName(MediaType mediaType, string name, int page, HttpClient client, Action f, bool checkDownloads)
         {
-            HttpResponseMessage response = await client.GetAsync("https://localhost:5001/api/media/get/movies/" + name);
+            string type = ((mediaType == MediaType.Movies)?"movies":(mediaType == MediaType.Shows)?"shows":"anime");
+            HttpResponseMessage response = await client.GetAsync($"https://localhost:5001/api/media/get/{type}/{name}/{page}/{checkDownloads}");
             if (!response.IsSuccessStatusCode)
                 return;
             string jsonObj = await response.Content.ReadAsStringAsync();
-            List<string> jsonObjList = JsonConvert.DeserializeObject<List<string>>(jsonObj);
-            foreach (string json in jsonObjList)
+            MediaPage mediaPage = JsonConvert.DeserializeObject<MediaPage>(jsonObj);
+            Pages = mediaPage.Pages;
+            Console.WriteLine("Movies: " + mediaPage.Media.Count);
+            Count = mediaPage.Media.Count;
+            foreach (MediaBase media in mediaPage.Media)
             {
-                MediaBase mediaBase = JsonConvert.DeserializeObject<MediaBase>(json);
-                List.Add(mediaBase);
+                List.Add(media);
+                f();
+                await Task.Delay(50);
             }
         }
     }

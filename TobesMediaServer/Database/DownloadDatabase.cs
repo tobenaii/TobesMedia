@@ -27,19 +27,5 @@ namespace TobesMediaServer.Database
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
             command.ExecuteNonQuery();
         }
-
-        public void RemoveDownload(int nzbID)
-        {
-            string sql = $"delete from downloads where nzbID='{nzbID}'";
-            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
-            command.ExecuteNonQuery();
-        }
-
-        public string GetImdbID(int nzbID)
-        {
-            string sql = $"select imdbID from downloads where nzbID='{nzbID}'";
-            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
-            return command.ExecuteScalar().ToString();
-        }
     }
 }

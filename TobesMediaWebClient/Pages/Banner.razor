@@ -1,19 +1,41 @@
-﻿@using TobesMediaWebClient.Pages.Buttons
+﻿@using TobesMediaWebClient.Pages.Components
+@using TobesMediaCore.Data.Media
 @inherits LayoutComponentBase
 
-    <div class="grid">
-        <div class="flex-1 row-auto">
-            <BannerButton Text="Movies"></BannerButton>
-            <BannerButton Text="Shows"></BannerButton>
-            <BannerButton Text="Anime"></BannerButton>
-            <input @bind="SearchTerm" style="border:solid; border-color:gray" class="text-white border-gray-600 border-solid focus:border-white bg-transparent" />
+<div class="grid w-100 ">
+    <div class="w-full border-2 border-red-700">
+        <div class="inline-block">
+            <BannerButton OnBannerClick="() => { CurrentMediaType = MediaType.Movies; }" Text="Movies"></BannerButton>
+        </div>
+        <div class="inline-block">
+            <BannerButton OnBannerClick="() => { CurrentMediaType = MediaType.Shows; }" Text="Shows"></BannerButton>
+        </div>
+        <div class="inline-block">
+            <BannerButton OnBannerClick="() => { CurrentMediaType = MediaType.Anime; }" Text="Anime"></BannerButton>
+        </div>
+        <div class="inline-block">
+            <div class="flex align-items-center border-2 border-green-700">
+                <input @bind="SearchTerm" style="border:solid; border-color:gray;" class="text-white border-gray-600 border-solid focus:border-white bg-transparent" />
+            </div>
+        </div>
         </div>
         <div class="flex flex-wrap row-auto w-screen">
             <CascadingValue Value="SearchTerm">
-                @Body
+                <CascadingValue Value="CurrentMediaType">
+                    <CascadingValue Value="FilterResults">
+                        <CascadingValue Value="CheckDownloads">
+                            @Body
+                        </CascadingValue>
+                    </CascadingValue>
+                </CascadingValue>
             </CascadingValue>
         </div>
     </div>
+
+
 @code {
     private string SearchTerm { get; set; }
+    private MediaType CurrentMediaType { get; set; }
+    private bool FilterResults { get; set; }
+    private bool CheckDownloads { get; set; }
 }

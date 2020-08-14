@@ -11,16 +11,62 @@
     <link href="css/site.css" rel="stylesheet" />
     <link href="manifest.json" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
-    
+    <script src="https://unpkg.com/@webcomponents/webcomponentsjs@next/webcomponents-loader.js"></script>
 </head>
 
 <style>
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .bg-blur {
+        filter: blur(10px);
+    }
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .hide-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
     body {
+        margin: 0px;
+        height: 100%;
         background-color: black;
     }
 </style>
 
 <body>
+    <script>
+        function getScrollRelative(element) {
+            var maxScrollBot = element.scrollHeight - element.clientHeight;
+            var scrollRel = 0;
+            if (maxScrollBot !== 0)
+                scrollRel = element.scrollTop / maxScrollBot;
+
+            if (isNaN(scrollRel))
+                scrollRel = 0;
+            return scrollRel;
+        }
+    </script>
+    <script type="module">
+        import { PolymerElement, html } from 'https://unpkg.com/@polymer/polymer@next/polymer-element.js?module';
+
+        class MyElement extends PolymerElement {
+
+            static get properties() { return { mood: String } }
+
+            static get template() {
+                return html`
+              <style> .mood { color: green; } </style>
+              Web Components are <span class="mood">[[mood]]</span>!
+            `;
+            }
+        }
+
+        customElements.define('my-element', MyElement);
+    </script>
     <app>Loading...</app>
     <div id="blazor-error-ui">
         An unhandled error has occurred.

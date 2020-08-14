@@ -1,43 +1,80 @@
 ﻿@page "/"
+@using TobesMediaWebClient.Pages.Components
 @using TobesMediaCore.Data.Media;
 @using TobesMediaCore.Network;
 @using System.Net.Http
 @using System.Timers;
 @inject HttpClient Http
-@inject IJSRuntime  JSRuntime;
-
-@layout Banner
+@inject IJSRuntime  JSRuntime
 
 @if (!m_isPlaying)
 {
-        @foreach (MediaBase movie in movies.List)
+    @layout Banner
+    <div @ref="m_divElement" @onscroll="() => OnScroll()" class="@(m_isPreviewing ? "bg-blur" : "") z-10 hide-scrollbar position-fixed overflow-y-auto pt-1 flex flex-wrap pl-32 pr-32 pb-10 max-h-screen">
+        <div class="@(m_isPreviewing ? "opacity-75" : "opacity-0") bg-gray-900 position-fixed h-screen w-100 @(m_isPreviewing ? "z-40" : "")">
+
+        </div>
+        @for (int i = 0; i < mediaList.List.Count + (m_isLoading ? 20 : 0); i++)
         {
-            <div class="flex-initial col border-4 border-red-900 w-1/6">
-                @if (!movie.IsDownloaded)
-                {
-                    <img class="border-8 border-blue-900 object-contain" src=@movie.PosterURL @onclick="() => DownloadMovie(movie)"/>
-                }
-                else if (!movie.IsDownloading)
-                {
-                    <img class="border-8 border-blue-900 object-contain" src=@movie.PosterURL/>
-                }
-                <progress class="w-full" value="@movie.Progress" max="100"></progress>
+            MediaBase media = (i >= mediaList.List.Count ? null : mediaList.List[i]);
+            <div class="sm:w-auto md:w-1/3 lg:w-1/6 xl:w-1/6 p-2">
+                @*<img class="transition-transform duration-200 @((m_rendered) ? "scale-100" : "scale-0") animate-pulse transform border-2 border-gray-900 hover:border-gray-400 object-contain p-2 hover:scale-105" src="blank.png" />*@
+                <img class="transition-all transform duration-200 scale-100) @(media == null && !m_isPreviewing ? "animate-pulse" : "") border-2 border-gray-900 hover:border-gray-400 object-contain p-2 hover:scale-105" src=@(media == null ? "blank.png" : media.PosterURL) @onclick="() => ShowInfo(media)" />
+                @*<progress class="w-full" value="@media.Status.progress" max="100"></progress>*@
             </div>
         }
-}
 
+        @*<progress class="w-full" value="@media.Status.progress" max="100"></progress>*@
+    </div>
+    <div class="position-fixed pt-1 pl-32 pr-32 pb-12 w-screen h-screen transition-opacity duration-200 @(m_isPreviewing ? "z-40" : "") @(m_isPreviewing ? "opacity-100" : "opacity-0")">
+        @if (m_isPreviewing)
+        {
+            <button @onclick="HideInfo" class="position-fixed bg-white rounded w-10">Back</button>
+        <div class="flex w-100 h-100">
+            <div class="flex-1 w-100 h-100">
+                <img class="m-auto h-100" src="@m_preview.PosterURL" />
+            </div>
+            <div class="flex flex-col flex-1 w-100 h-100 bg-gray-900 bg-opacity-75">
+                <div class="flex-shrink">
+                    <span class="w-100 font-bold text-6xl text-center text-white">@m_preview.Name</span>
+                </div>
+                <div class="flex-1">
+                    <span class="text-white text-4xl">@m_preview.Description</span>
+                </div>
+            </div>
+        </div>
+
+            @*<div class="flex text-center">
+                <span class="w-100 font-bold text-6xl text-center text-white">@m_preview.Name</span>
+            </div>
+            <div class="flex w-100 h-100">
+
+                <div class="flex-1">
+                    <span class="text-white">This is a description of some shit lmao hahahhaah xDeezNuts</span>
+                </div>
+            </div>*@
+        }
+    </div>
+}
 @code {
     private string m_searchTerm = string.Empty;
-    [CascadingParameter] private string SearchTerm { get { return m_searchTerm; } set { m_searchTerm = value; LoadMoviesByName(); } }
+    private MediaType m_currentMediaType = MediaType.Movies;
+    [CascadingParameter] private string SearchTerm { get { return m_searchTerm; } set { m_searchTerm = value; UpdateSearch(); } }
+    [CascadingParameter] private MediaType CurrentMediaType { get { return m_currentMediaType; } set { m_currentMediaType = value; } }
+    [CascadingParameter] private bool CheckDownloads { get; set; }
     private bool m_isPlaying;
     private string m_videoURL;
-    MediaBaseList movies = new MediaBaseList();
+    MediaBaseList mediaList = new MediaBaseList();
+    private int m_page = 1;
+    private bool m_isLoading;
 
     private System.Timers.Timer m_timer = new System.Timers.Timer();
+    private ElementReference m_divElement;
+    private bool m_isPreviewing;
+    private MediaBase m_preview;
 
     protected override void OnInitialized()
     {
-        LoadMovies();
         m_timer = new System.Timers.Timer();
         m_timer.Elapsed += UpdateData;
         m_timer.Interval = 1000; // in miliseconds
@@ -45,42 +82,57 @@
         m_timer.Enabled = true;
     }
 
+    private void TurnPage(int turns)
+    {
+        m_page += turns;
+        if (m_page < 1)
+            m_page = 1;
+        LoadMediaByName();
+    }
+
     private void UpdateData(object sender, ElapsedEventArgs e)
     {
-        foreach (MediaBase movie in movies.List)
-        {
-            movie.UpdateProgress(Http);
-            if (movie.IsDownloading)
-                StateHasChanged();
-        }
+        //foreach (MediaBase media in mediaList.List)
+        //{
+        //    media.UpdateStatus(Http);
+        //}
+        //StateHasChanged();
     }
 
-    private async void DownloadMovie(MediaBase mediaBase)
+    private async void OnScroll()
     {
-        await mediaBase.DownloadMovie(Http);
+        if (m_isLoading)
+            return;
+        var relativeScroll = await JSRuntime.InvokeAsync<float>("getScrollRelative", m_divElement);
+        if (relativeScroll >= 0.95)
+            TurnPage(1);
     }
 
-    private void PlayMovie(MediaBase mediaBase)
+    private void ClearSearch()
     {
-        m_isPlaying = true;
-        m_videoURL = "https://localhost:5001/api/media/play/movie/" + mediaBase.ID;
-        UpdateVideo(m_videoURL);
+        mediaList = new MediaBaseList();
+        m_tasks.Clear();
+        m_page = 1;
     }
 
     private void UpdateSearch()
     {
         if (m_searchTerm == string.Empty)
             return;
-        LoadMoviesByName();
+        ClearSearch();
+        LoadMediaByName();
     }
 
-    private async void LoadMovies()
+    private async void ShowInfo(MediaBase mediaBase)
     {
-        MediaBase movie = new MediaBase();
-        await movie.LoadMovieAsync("tt3896198", Http);
-        Console.WriteLine(movie.ID);
-        movies.List.Add(movie);
-        StateHasChanged();
+        m_isPreviewing = true;
+        m_preview = mediaBase;
+    }
+
+    private async void HideInfo()
+    {
+        m_isPreviewing = false;
+        m_preview = null;
     }
 
     private void UpdateVideo(string source)
@@ -88,10 +140,16 @@
         (JSRuntime as IJSInProcessRuntime).InvokeVoid("toggleVideo", source);
     }
 
-    private async void LoadMoviesByName()
+    private List<Task> m_tasks = new List<Task>();
+    private async void LoadMediaByName()
     {
-        movies.List.Clear();
-        await movies.LoadMoviesByName(SearchTerm, Http);
+        if (m_searchTerm == string.Empty || m_searchTerm == null)
+            return;
+        m_isLoading = true;
+        StateHasChanged();
+        m_tasks.Add(mediaList.LoadMoviesByName(m_currentMediaType, SearchTerm, m_page, Http, StateHasChanged, CheckDownloads));
+        await Task.WhenAll(m_tasks);
+        m_isLoading = false;
         StateHasChanged();
     }
 }

@@ -20,6 +20,9 @@ using TobesMediaServer.MediaInfo;
 using TobesMediaServer.OMDB;
 using TobesMediaServer.MediaPipeline;
 using TobesMediaServer.ffmpeg;
+using TobesMediaServer.MediaInfo.API;
+using TobesMediaServer.Indexer;
+using TobesMediaServer.MediaInfo.OMDB;
 
 namespace TobesMediaServer
 {
@@ -42,11 +45,15 @@ namespace TobesMediaServer
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
-            services.AddSingleton<IMovieInfo, OmdbMovieInfo>();
-            services.AddSingleton<IMovieDatabase, MySqlMovieDatabase>();
+            services.AddSingleton<IMovieInfo, TmdbMovieInfo>();
+            services.AddSingleton<IShowInfo, TmdbShowInfo>();
+            services.AddSingleton<IAnimeInfo, TmdbAnimeInfo>();
+            services.AddSingleton<IMediaDatabase, MySqlMediaDatabase>();
             services.AddSingleton<INzbManager, NZBgetManager>();
 
-            services.AddSingleton<IMediaService, NzbDownloadService>();
+            services.AddTransient<IUsenetIndexer, NzbGeekIndexer>();
+
+            services.AddTransient<IMediaService, NzbDownloadService>();
             services.AddTransient<IMediaService, FfmpegTranscodeService>();
 
             services.AddTransient<IMediaPipeline, MoviePipeline>();
