@@ -24,10 +24,10 @@ namespace TobesMediaServer.Controllers
             m_movieInfo = movieInfo;
         }
 
-        [Route("media/get/movies/{name}/{page}")]
-        public async Task<string> GetMoviesByNameAsync(string name, int page)
+        [Route("media/get/movies/{name}/{page}/{checkDownload}")]
+        public async Task<string> GetMoviesByNameAsync(string name, int page, bool checkDownload)
         {
-            MediaPage movies = await m_movieInfo.GetMediaByNameAsync(name, page, false);
+            MediaPage movies = await m_movieInfo.GetMediaByNameAsync(name, page, checkDownload);
             return JsonConvert.SerializeObject(movies);
         }
     }

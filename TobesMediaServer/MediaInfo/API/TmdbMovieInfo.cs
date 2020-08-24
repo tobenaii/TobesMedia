@@ -31,7 +31,7 @@ namespace TobesMediaServer.MediaInfo.API
             var message = await m_client.GetAsync($"https://api.themoviedb.org/3/find/{id}?api_key=295f15628e2e84110ce9197ae94e652b&language=en-US&external_source=imdb_id");
             JObject json = JObject.Parse(await message.Content.ReadAsStringAsync());
             JArray array = JArray.Parse(json["movie_results"].ToString());
-            MediaBase movie = await ParseMediaFromJsonAsync(JObject.Parse(array[0].ToString()));
+            MediaBase movie = await ParseMediaFromJsonAsync(JObject.Parse(array[0].ToString()), false);
             return movie;
         }
 
@@ -47,13 +47,13 @@ namespace TobesMediaServer.MediaInfo.API
             List<Task> tasks = new List<Task>();
             for (int i = 0; i < array.Count; i++)
             {
-                tasks.Add(ParseMediaFromJsonAsync(array[i] as JObject, movies));
+                tasks.Add(ParseMediaFromJsonAsync(array[i] as JObject, checkDownload, movies));
             }
             await Task.WhenAll(tasks);
             return new MediaPage(json["total_pages"].ToObject<int>(), page, movies);
         }
 
-        private async Task<MediaBase> ParseMediaFromJsonAsync(JObject json, List<MediaBase> mediaList = null)
+        private async Task<MediaBase> ParseMediaFromJsonAsync(JObject json, bool checkDownload, List<MediaBase> mediaList = null)
         {
             string id = json["id"].ToString();
             var message = await m_client.GetAsync($"https://api.themoviedb.org/3/movie/{id}?api_key=295f15628e2e84110ce9197ae94e652b&language=en-US");
@@ -63,7 +63,7 @@ namespace TobesMediaServer.MediaInfo.API
                 return null;
             string imdbID = result["imdb_id"].ToString();
 
-            if (await m_indexer.GetMovieLinkByNzbIdAsync(imdbID) == string.Empty)
+            if (checkDownload && await m_indexer.GetMovieLinkByNzbIdAsync(imdbID) == string.Empty)
             {
                 return null;
             }
