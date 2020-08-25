@@ -11,12 +11,16 @@ namespace TobesMediaServer.MediaPipeline
     public class MoviePipeline : IMediaPipeline
     {
         private IEnumerable<IMediaService> m_services;
-        private IMediaDatabase m_database;
+        private IMediaPipelineDatabase m_database;
+        private IPipelineData m_data;
+        private ILocalMediaDatabase m_localDatabase;
 
-        public MoviePipeline(IEnumerable<IMediaService> services, IMediaDatabase database)
+        public MoviePipeline(IEnumerable<IMediaService> services, IMediaPipelineDatabase database, IPipelineData data, ILocalMediaDatabase local)
         {
             m_services = services;
             m_database = database;
+            m_data = data;
+            m_localDatabase = local;
             foreach (IMediaService service in m_services)
             {
                 Console.WriteLine($"Added Service: {service.GetType().Name}");
@@ -26,8 +30,10 @@ namespace TobesMediaServer.MediaPipeline
         public async Task ProcessMediaAsync(MediaBase media)
         {
             MediaFile file = new MediaFile(media);
-            if (!await m_database.MediaExistsAsync("Pipeline", media.ID))
-                m_database.AddMedia("Pipeline", media.ID);
+            file.IsProcessing = true;
+            m_data.AddMedia(file);
+            if (!await m_database.MediaExistsAsync(media.ID))
+                m_database.AddMedia(media.ID);
             foreach (IMediaService service in m_services)
             {
                 await service.ProcessMediaAsync(file, MediaType.Movies);
@@ -41,7 +47,9 @@ namespace TobesMediaServer.MediaPipeline
                     await Task.Delay(100);
                 }
             }
-            m_database.RemoveMedia("Pipeline", media.ID);
+            file.IsProcessing = false;
+            m_database.RemoveMedia(media.ID);
+            m_localDatabase.AddMedia(media.ID, file.FilePath);
         }
     }
 }

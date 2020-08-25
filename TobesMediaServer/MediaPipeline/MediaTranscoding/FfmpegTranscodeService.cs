@@ -20,6 +20,12 @@ namespace TobesMediaServer.ffmpeg
         {
             ffmpeg = new Engine(m_binPath);
             ffmpeg.Progress += OnProgress;
+            ffmpeg.Complete += OnComplete;
+        }
+
+        private void OnComplete(object sender, ConversionCompleteEventArgs e)
+        {
+            m_mediaFile.FinishedProcessing();
         }
 
         public async Task ProcessMediaAsync(MediaPipeline.MediaFile media, MediaType type)
@@ -29,6 +35,7 @@ namespace TobesMediaServer.ffmpeg
                 return;
             Console.WriteLine("Processing Transcode");
             m_mediaFile = media;
+            media.Message = "Transcoding";
             string newFilePath = Path.ChangeExtension(filePath, ".mp4");
             var inputFile = new FFmpeg.NET.MediaFile(filePath);
             var outputFile = new FFmpeg.NET.MediaFile(newFilePath);

@@ -7,11 +7,11 @@ namespace TobesMediaServer.Database
 {
     public interface IMediaDatabase
     {
-        public void AddMedia(string table, string id, string value = "");
-        public Task<string> GetValueAsync(string table, string id);
-        public Task<bool> MediaExistsAsync(string table, string id);
-        public void RemoveMedia(string table, string id);
+        public void AddMedia(string id, string value = "");
+        public Task<string> GetValueAsync(string id);
+        public Task<bool> MediaExistsAsync(string id);
+        public void RemoveMedia(string id);
 
-        public Task<List<string>> GetAllIdsAsync(string table);
+        public Task<List<string>> GetAllIdsAsync();
     }
 }

@@ -48,8 +48,11 @@ namespace TobesMediaServer
             services.AddSingleton<IMovieInfo, TmdbMovieInfo>();
             services.AddSingleton<IShowInfo, TmdbShowInfo>();
             services.AddSingleton<IAnimeInfo, TmdbAnimeInfo>();
-            services.AddSingleton<IMediaDatabase, MySqlMediaDatabase>();
+            services.AddSingleton<IMediaPipelineDatabase, MySqlMediaDatabase>(x => new MySqlMediaDatabase("Pipeline"));
+            services.AddSingleton<ILocalMediaDatabase, MySqlMediaDatabase>(x => new MySqlMediaDatabase("Local"));
+            services.AddSingleton<IDownloadDatabase, MySqlMediaDatabase>(x => new MySqlMediaDatabase("Downloads"));
             services.AddSingleton<INzbManager, NZBgetManager>();
+            services.AddSingleton<IPipelineData, PipelineData>();
 
             services.AddTransient<IUsenetIndexer, NzbGeekIndexer>();
 

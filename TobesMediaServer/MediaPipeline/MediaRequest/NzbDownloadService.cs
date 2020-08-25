@@ -48,13 +48,13 @@ namespace TobesMediaCore.MediaRequest
 
         private INzbManager m_nzbManager;
         private IUsenetIndexer m_usenetIndexer;
-        private IMediaDatabase m_mediaDatabase;
+        private IDownloadDatabase m_mediaDatabase;
 
         private System.Timers.Timer m_timer = new System.Timers.Timer();
         private NzbMediaDownload m_mediaDownload;
         private string m_rootDirectory = "C:/MediaServer/Movies/";
 
-        public NzbDownloadService(INzbManager nzbManager, IUsenetIndexer indexer, IMediaDatabase mediaDatabase)
+        public NzbDownloadService(INzbManager nzbManager, IUsenetIndexer indexer, IDownloadDatabase mediaDatabase)
         {
             m_nzbManager = nzbManager;
             m_usenetIndexer = indexer;
@@ -77,6 +77,7 @@ namespace TobesMediaCore.MediaRequest
             {
                 Console.Clear();
                 Console.WriteLine(item.FileName + ": " + item.Progress + "%");
+                m_mediaDownload.mediaFile.Progress = item.Progress;
                 if (item.IsCompleted)
                 {
                     string intFilePath = FindMediaFileRecursive(item.Directory);
@@ -91,6 +92,8 @@ namespace TobesMediaCore.MediaRequest
                     File.Move(intFilePath, newFilePath);
                     m_mediaDownload.mediaFile.Progress = 100;
                     m_mediaDownload.mediaFile.FilePath = newFilePath;
+                    m_mediaDownload.mediaFile.FinishedProcessing();
+                    m_timer.Stop();
                 }
             }
         }
@@ -136,15 +139,16 @@ namespace TobesMediaCore.MediaRequest
             }
             Console.WriteLine("Attempting Download");
             int id;
-            string checkId = await m_mediaDatabase.GetValueAsync("Downloads", mediaFile.Media.ID);
+            string checkId = await m_mediaDatabase.GetValueAsync(mediaFile.Media.ID);
             if (checkId != string.Empty)
                 id = Convert.ToInt32(checkId);
             else
             {
                 id = m_nzbManager.DownloadMovieByNzbLink(nzbLink);
-                m_mediaDatabase.AddMedia("Downloads", mediaFile.Media.ID, id.ToString());
+                m_mediaDatabase.AddMedia(mediaFile.Media.ID, id.ToString());
             }
             Console.WriteLine("Downloading");
+            mediaFile.Message = "Downloading";
             m_mediaDownload = new NzbMediaDownload(id, mediaFile);
         }
     }

@@ -20,6 +20,9 @@ namespace TobesMediaCore.Data.Media
         [JsonProperty]
         public string ID { get; private set; } = string.Empty;
 
+        public bool IsAvailable { get; private set; } = false;
+        public MediaStatus Status { get; private set; }
+
         public MediaBase() { }
 
         public MediaBase(string name, string description, string posterURL, string id)
@@ -42,17 +45,25 @@ namespace TobesMediaCore.Data.Media
         //    IsDownloaded = mediaBase.IsDownloaded;
         //}
 
-        public async Task<MediaStatus> GetStatus(HttpClient client)
+        public async Task UpdateStatus(HttpClient client)
         {
             HttpResponseMessage response = await client.GetAsync("https://localhost:5001/api/media/get/movie/status/" + ID);
-            MediaStatus status = (MediaStatus)await response.Content.ReadAsAsync(typeof(MediaStatus));
-            return status;
+            string statusJson = await response.Content.ReadAsStringAsync();
+            MediaStatus status = JsonConvert.DeserializeObject<MediaStatus>(statusJson);
+            Status = status;
         }
 
-        public async Task DownloadMovie(HttpClient client)
+        public void DownloadMovie(HttpClient client)
         {
             string id = ID.Replace("tt", "");
-            await client.PutAsync("https://localhost:5001/api/media/request/movie/" + id, null);
+            client.PutAsync("https://localhost:5001/api/media/request/movie/" + id, null);
+        }
+
+        public async Task UpdateAvailability(HttpClient client)
+        {
+            string id = ID.Replace("tt", "");
+            HttpResponseMessage response = await client.GetAsync("https://localhost:5001/api/media/get/movies/isAvailable/" + id);
+            IsAvailable = await response.Content.ReadAsAsync<bool>();
         }
     }
 }

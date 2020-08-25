@@ -28,22 +28,34 @@
         @if (m_isPreviewing)
         {
             <button @onclick="HideInfo" class="position-fixed bg-white rounded w-10">Back</button>
-        <div class="flex w-100 h-100">
-            <div class="flex-1 w-100 h-100">
-                <img class="m-auto h-100" src="@m_preview.PosterURL" />
+            <div class="flex w-100 h-100">
+                <div class="flex-initial h-50 border-red-500 border-4">
+                    <img class="m-auto h-100" src="@m_preview.PosterURL" />
+                </div>
+                <div class="flex flex-col flex-1 w-100 h-50 ml-10">
+                    <div class="flex-shrink">
+                        <span class="w-100 font-bold text-4xl text-center text-white">@m_preview.Name</span>
+                    </div>
+                    <div class="flex-1 min-h-0 overflow-hidden oi-ellipses" style="text-overflow: ellipsis;">
+                        <span class="text-white text-2xl">@m_preview.Description</span>
+                    </div>
+                    <div class="flex-initial m-0">
+                        @if (m_preview.IsAvailable)
+                        {
+                            <button class="w-auto font-bold text-4xl text-white">Play</button>
+                        }
+                        else if (!m_preview.Status.IsProcessing)
+                        {
+                            <button @onclick="() => m_preview.DownloadMovie(Http)" class="w-auto font-bold text-4xl text-white">Download</button>
+                        }
+                        else
+                        {
+                            <span class="w-auto font-bold text-4xl text-white">@(m_preview.Status.Message)</span>
+                            <progress class="w-full" value="@m_preview.Status.Progress" max="100"></progress>
+                        }
+                    </div>
+                </div>
             </div>
-            <div class="flex flex-col flex-1 w-100 h-100">
-                <div class="flex-shrink">
-                    <span class="w-100 font-bold text-2xl text-center text-white">@m_preview.Name</span>
-                </div>
-                <div class="flex-1">
-                    <span class="text-white">@m_preview.Description</span>
-                </div>
-                <div class="flex-1">
-                     
-                </div>
-            </div>
-        </div>
 
             @*<div class="flex text-center">
                 <span class="w-100 font-bold text-6xl text-center text-white">@m_preview.Name</span>
@@ -94,6 +106,9 @@
 
     private void UpdateData(object sender, ElapsedEventArgs e)
     {
+        m_preview.UpdateStatus(Http);
+        m_preview.UpdateAvailability(Http);
+        StateHasChanged();
         //foreach (MediaBase media in mediaList.List)
         //{
         //    media.UpdateStatus(Http);
@@ -129,6 +144,7 @@
     {
         m_isPreviewing = true;
         m_preview = mediaBase;
+        await m_preview.UpdateAvailability(Http);
     }
 
     private async void HideInfo()
