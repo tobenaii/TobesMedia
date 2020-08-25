@@ -1,8 +1,10 @@
-﻿<button @onclick="OnBannerClick" class="transition duration-500 transform hover:scale-110 focus:translate-y-8 focus:scale-110 focus:text-white px-3 py-2 bg-transparent rounded-md text-gray-600 hover:text-white ">@Text</button>
+﻿<button @onclick="OnBannerClick" class="transition duration-500 outline-none focus:outline-none transform hover:scale-110 px-3 py-2 bg-transparent rounded-md text-gray-600  @(Selected?"text-red-800 scale-110":"hover:text-white")">@Text</button>
 
 @code {
     [Parameter]
     public string Text { get; set; } = "Default";
     [Parameter]
     public EventCallback OnBannerClick { get; set; }
+    [Parameter]
+    public bool Selected { get; set; }
 }

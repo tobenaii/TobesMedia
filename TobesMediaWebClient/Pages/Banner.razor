@@ -3,15 +3,15 @@
 @inherits LayoutComponentBase
 
 <div class="grid w-100 ">
-    <div class="w-full border-2 border-red-700">
+    <div class="w-full">
         <div class="inline-block">
-            <BannerButton OnBannerClick="() => { CurrentMediaType = MediaType.Movies; }" Text="Movies"></BannerButton>
+            <BannerButton Selected="(CurrentMediaType == MediaType.Movies?true:false)" OnBannerClick="() => { CurrentMediaType = MediaType.Movies; }" Text="Movies"></BannerButton>
         </div>
         <div class="inline-block">
-            <BannerButton OnBannerClick="() => { CurrentMediaType = MediaType.Shows; }" Text="Shows"></BannerButton>
+            <BannerButton Selected="(CurrentMediaType == MediaType.Shows?true:false)" OnBannerClick="() => { CurrentMediaType = MediaType.Shows; }" Text="Shows"></BannerButton>
         </div>
         <div class="inline-block">
-            <BannerButton OnBannerClick="() => { CurrentMediaType = MediaType.Anime; }" Text="Anime"></BannerButton>
+            <BannerButton Selected="(CurrentMediaType == MediaType.Anime?true:false)" OnBannerClick="() => { CurrentMediaType = MediaType.Anime; }" Text="Anime"></BannerButton>
         </div>
         <div class="inline-block">
             <div class="flex align-items-center border-2 border-green-700">
