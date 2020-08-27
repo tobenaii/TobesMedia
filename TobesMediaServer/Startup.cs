@@ -19,10 +19,10 @@ using TobesMediaCore.MediaRequest;
 using TobesMediaServer.MediaInfo;
 using TobesMediaServer.OMDB;
 using TobesMediaServer.MediaPipeline;
-using TobesMediaServer.ffmpeg;
 using TobesMediaServer.MediaInfo.API;
 using TobesMediaServer.Indexer;
 using TobesMediaServer.MediaInfo.OMDB;
+using TobesMediaServer.Transcoding;
 
 namespace TobesMediaServer
 {
@@ -60,6 +60,8 @@ namespace TobesMediaServer
             services.AddTransient<IMediaService, FfmpegTranscodeService>();
 
             services.AddTransient<IMediaPipeline, MoviePipeline>();
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

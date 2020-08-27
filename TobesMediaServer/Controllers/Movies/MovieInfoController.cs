@@ -50,5 +50,13 @@ namespace TobesMediaServer.Controllers
                 return JsonConvert.SerializeObject(status.Value);
             return JsonConvert.SerializeObject(new MediaStatus());
         }
+
+        [Route("media/play/movie/{id}")]
+        public async Task<FileResult> PlayMovieByIDAsync(string id)
+        {
+            string movieDir = await m_database.GetValueAsync(id);
+            PhysicalFileResult file = PhysicalFile(movieDir, "video/mp4", true);
+            return file;
+        }
     }
 }

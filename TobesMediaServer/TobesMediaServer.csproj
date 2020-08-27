@@ -9,6 +9,7 @@
     <PackageReference Include="StreamJsonRpc" Version="2.4.48" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
     <PackageReference Include="Unity" Version="5.11.7" />
+    <PackageReference Include="Xabe.FFmpeg" Version="4.1.1" />
     <PackageReference Include="xFFmpeg.NET" Version="3.4.0" />
   </ItemGroup>
 

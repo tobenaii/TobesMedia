@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -76,11 +77,15 @@ namespace TobesMediaServer.Database
             {
                 string sql = $"select value from {m_table} where id='{id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
-                DbDataReader value = await command.ExecuteReaderAsync();
-                return value.GetString(0);
+                object obj = await command.ExecuteScalarAsync();
+                if (obj != null)
+                    return obj.ToString();
+                else
+                    return "";
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 return string.Empty;
             }
         }

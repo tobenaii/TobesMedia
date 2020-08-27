@@ -22,6 +22,7 @@ namespace TobesMediaCore.Data.Media
 
         public bool IsAvailable { get; private set; } = false;
         public MediaStatus Status { get; private set; }
+        public string MediaURL { get; private set; }
 
         public MediaBase() { }
 
@@ -30,6 +31,7 @@ namespace TobesMediaCore.Data.Media
             Name = name;
             Description = description;
             PosterURL = posterURL;
+            id = id.Replace("tt", "");
             ID = id;
         }
 
@@ -55,15 +57,18 @@ namespace TobesMediaCore.Data.Media
 
         public void DownloadMovie(HttpClient client)
         {
-            string id = ID.Replace("tt", "");
-            client.PutAsync("https://localhost:5001/api/media/request/movie/" + id, null);
+            client.PutAsync("https://localhost:5001/api/media/request/movie/" + ID, null);
         }
 
         public async Task UpdateAvailability(HttpClient client)
         {
-            string id = ID.Replace("tt", "");
-            HttpResponseMessage response = await client.GetAsync("https://localhost:5001/api/media/get/movies/isAvailable/" + id);
+            HttpResponseMessage response = await client.GetAsync("https://localhost:5001/api/media/get/movies/isAvailable/" + ID);
             IsAvailable = await response.Content.ReadAsAsync<bool>();
+        }
+
+        public string  GetVideoURL()
+        {
+            return "https://localhost:5001/api/media/play/movie/" + ID;
         }
     }
 }

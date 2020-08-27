@@ -42,7 +42,7 @@
                     <div class="flex-initial m-0">
                         @if (m_preview.IsAvailable)
                         {
-                            <button class="w-auto font-bold text-4xl text-white">Play</button>
+                            <button @onclick="() => PlayMedia()" class="w-auto font-bold text-4xl text-white">Play</button>
                         }
                         else if (!m_preview.Status.IsProcessing)
                         {
@@ -58,16 +58,23 @@
             </div>
 
             @*<div class="flex text-center">
-                <span class="w-100 font-bold text-6xl text-center text-white">@m_preview.Name</span>
-            </div>
-            <div class="flex w-100 h-100">
-
-                <div class="flex-1">
-                    <span class="text-white">This is a description of some shit lmao hahahhaah xDeezNuts</span>
+                    <span class="w-100 font-bold text-6xl text-center text-white">@m_preview.Name</span>
                 </div>
-            </div>*@
+                <div class="flex w-100 h-100">
+
+                    <div class="flex-1">
+                        <span class="text-white">This is a description of some shit lmao hahahhaah xDeezNuts</span>
+                    </div>
+                </div>*@
         }
+
     </div>
+}
+else
+{
+    <video class="w-screen h-screen" controls>
+        <source src="@m_preview.GetVideoURL()" type="video/mp4" />
+    </video>
 }
 @code {
     private string m_searchTerm = string.Empty;
@@ -94,6 +101,12 @@
         m_timer.AutoReset = true;
         m_timer.Enabled = true;
         SearchTerm = "The";
+    }
+
+    private void PlayMedia()
+    {
+        m_isPlaying = true;
+        StateHasChanged();
     }
 
     private void TurnPage(int turns)
@@ -144,7 +157,9 @@
     {
         m_isPreviewing = true;
         m_preview = mediaBase;
+        await m_preview.UpdateStatus(Http);
         await m_preview.UpdateAvailability(Http);
+        StateHasChanged();
     }
 
     private async void HideInfo()
