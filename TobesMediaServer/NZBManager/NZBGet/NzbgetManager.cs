@@ -136,6 +136,8 @@ namespace TobesMediaServer.NZBGet
                 downloadItem.Progress = 100;
                 downloadItem.IsCompleted = item.MoveStatus == "SUCCESS";
                 downloadItem.Directory = item.FinalDir == string.Empty ? item.DestDir : item.FinalDir;
+                downloadItem.Failed = item.Status.Contains("FAILURE");
+                downloadItem.IsCopy = item.Status.Contains("COPY");
                 downloadItems.Add(downloadItem);
             }
             return downloadItems;

@@ -15,10 +15,12 @@ namespace TobesMediaServer.Transcoding
         private MediaPipeline.MediaFile m_mediaFile;
         private const string m_binPath = "MediaPipeline/MediaTranscoding/binaries/";
         Xabe.FFmpeg.FFmpeg ffmpeg;
+        private IServiceLogger m_logger;
 
-        public FfmpegTranscodeService(string ffmpegPath = m_binPath)
+        public FfmpegTranscodeService(IServiceLogger logger, string ffmpegPath = m_binPath)
         {
             Xabe.FFmpeg.FFmpeg.SetExecutablesPath(ffmpegPath);
+            m_logger = logger;
         }
 
         private void OnComplete(object sender, Xabe.FFmpeg.Events.ConversionProgressEventArgs e)
@@ -26,14 +28,16 @@ namespace TobesMediaServer.Transcoding
             m_mediaFile.FinishedProcessing();
         }
 
-        public async Task ProcessMediaAsync(MediaPipeline.MediaFile media, MediaType type)
+        public async Task ProcessMediaAsync(MediaPipeline.MediaFile media, MediaType type, bool restore)
         {
             string filePath = media.FilePath;
             Console.WriteLine("Processing Transcode");
             m_mediaFile = media;
             media.Message = "Transcoding";
             string newFilePath = Path.ChangeExtension(filePath, ".webm");
-
+            if (File.Exists(newFilePath))
+                File.Delete(newFilePath);
+            //await Task.Run(async () => { while (File.Exists(newFilePath)) { await Task.Delay(100); } });
             Console.WriteLine("Transcoding");
             IMediaInfo mediaInfo = await Xabe.FFmpeg.FFmpeg.GetMediaInfo(filePath);
             IStream videoStream = mediaInfo.VideoStreams.FirstOrDefault()?.SetCodec(VideoCodec.vp9);
@@ -59,9 +63,8 @@ namespace TobesMediaServer.Transcoding
         {
             if (m_mediaFile != null)
             {
-                Console.Clear();
                 m_mediaFile.Progress = (int)((float)(e.Duration.TotalSeconds / e.TotalLength.TotalSeconds) * 100.0f);
-                Console.WriteLine($"Transcoding {m_mediaFile.Media.Name}: {m_mediaFile.Progress}");
+                m_logger.Log($"Transcoding {m_mediaFile.Media.Name}: {m_mediaFile.Progress}", this);
             }
         }
     }

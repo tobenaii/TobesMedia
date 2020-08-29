@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TobesMediaCore.Data.Media;
 
 namespace TobesMediaServer.MediaPipeline
 {
-    public interface IMediaService
+    public interface IServiceLogger
     {
-        public Task ProcessMediaAsync(MediaFile media, MediaType type, bool restore);
+        public void Log(string message, IMediaService service);
     }
 }

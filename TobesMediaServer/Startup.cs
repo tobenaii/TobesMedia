@@ -36,7 +36,7 @@ namespace TobesMediaServer
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public async void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
@@ -48,6 +48,7 @@ namespace TobesMediaServer
             services.AddSingleton<IMovieInfo, TmdbMovieInfo>();
             services.AddSingleton<IShowInfo, TmdbShowInfo>();
             services.AddSingleton<IAnimeInfo, TmdbAnimeInfo>();
+
             services.AddSingleton<IMediaPipelineDatabase, MySqlMediaDatabase>(x => new MySqlMediaDatabase("Pipeline"));
             services.AddSingleton<ILocalMediaDatabase, MySqlMediaDatabase>(x => new MySqlMediaDatabase("Local"));
             services.AddSingleton<IDownloadDatabase, MySqlMediaDatabase>(x => new MySqlMediaDatabase("Downloads"));
@@ -56,16 +57,15 @@ namespace TobesMediaServer
 
             services.AddTransient<IUsenetIndexer, NzbGeekIndexer>();
 
+            services.AddSingleton<IServiceLogger, ServiceLogger>();
             services.AddTransient<IMediaService, NzbDownloadService>();
             services.AddTransient<IMediaService, FfmpegTranscodeService>();
 
             services.AddTransient<IMediaPipeline, MoviePipeline>();
-
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMediaPipelineDatabase pipelineDB, IMovieInfo movieInfo)
         {
             if (env.IsDevelopment())
             {
@@ -81,6 +81,16 @@ namespace TobesMediaServer
             {
                 endpoints.MapControllers();
             });
+
+            List<string> ids = await pipelineDB.GetAllIdsAsync();
+            List<Task> pipes = new List<Task>();
+            foreach (string id in ids)
+            {
+                var movie = await movieInfo.GetMediaByIDAsync(id);
+                IMediaPipeline pipe = app.ApplicationServices.GetRequiredService<IMediaPipeline>();
+                pipes.Add(pipe.ProcessMediaAsync(movie, true));
+            }
+            await Task.WhenAll(pipes);
         }
     }
 }

@@ -63,7 +63,7 @@ namespace TobesMediaServer.MediaInfo.API
                 return null;
             string imdbID = result["imdb_id"].ToString();
 
-            if (checkDownload && await m_indexer.GetMovieLinkByNzbIdAsync(imdbID) == string.Empty)
+            if (checkDownload && await m_indexer.GetMovieLinkByNzbIdAsync(imdbID, 0) == string.Empty)
             {
                 return null;
             }

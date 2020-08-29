@@ -10,6 +10,7 @@ namespace TobesMediaServer.MediaPipeline
     public class PipelineData : IPipelineData
     {
         private List<MediaFile> m_media = new List<MediaFile>();
+        private Dictionary<IMediaService, string> m_logs = new Dictionary<IMediaService, string>();
 
         public void AddMedia(MediaFile media)
         {

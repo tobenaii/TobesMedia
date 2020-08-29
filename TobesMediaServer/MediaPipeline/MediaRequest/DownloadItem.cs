@@ -17,5 +17,8 @@ namespace TobesMediaServer.MediaRequest
         public bool IsCompleted { get; set; }
         public string Directory { get; set; }
         public string FileName { get; set; }
+        public bool Failed { get; set; }
+
+        public bool IsCopy { get; set; }
     }
 }

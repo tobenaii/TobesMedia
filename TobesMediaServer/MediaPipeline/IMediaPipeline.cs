@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +9,6 @@ namespace TobesMediaServer.MediaPipeline
 {
     public interface IMediaPipeline
     {
-        public Task ProcessMediaAsync(MediaBase media);
+        public Task ProcessMediaAsync(MediaBase media, bool restore = false);
     }
 }

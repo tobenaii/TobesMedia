@@ -48,13 +48,19 @@ namespace TobesMediaCore.MediaRequest
         private INzbManager m_nzbManager;
         private IUsenetIndexer m_usenetIndexer;
         private IDownloadDatabase m_mediaDatabase;
-
+        private IServiceLogger m_logger;
+        
         private System.Timers.Timer m_timer = new System.Timers.Timer();
         private NzbMediaDownload m_mediaDownload;
         private string m_rootDirectory = "C:/MediaServer/Movies/";
+        private int m_downloadIndex;
+        private MediaType m_mediaType;
+        private MediaFile m_mediaFile;
+        private bool m_isRestoring;
 
-        public NzbDownloadService(INzbManager nzbManager, IUsenetIndexer indexer, IDownloadDatabase mediaDatabase)
+        public NzbDownloadService(INzbManager nzbManager, IUsenetIndexer indexer, IDownloadDatabase mediaDatabase, IServiceLogger logger)
         {
+            m_logger = logger;
             m_nzbManager = nzbManager;
             m_usenetIndexer = indexer;
             m_mediaDatabase = mediaDatabase;
@@ -70,21 +76,37 @@ namespace TobesMediaCore.MediaRequest
         {
             List<DownloadItem> downloadItems = m_nzbManager.DownloadItems;
             if (downloadItems == null)
+            {
                 return;
+            }
             DownloadItem item = downloadItems.FirstOrDefault(x => x.ID == m_mediaDownload.ID);
             if (item != null)
             {
-                Console.Clear();
-                Console.WriteLine(item.FileName + ": " + item.Progress + "%");
+                if (item.Failed || item.IsCopy)
+                {
+                    TryNextDownload();
+                    return;
+                }
+                m_logger.Log(item.FileName + ": " + item.Progress + "%", this);
                 m_mediaDownload.mediaFile.Progress = item.Progress;
                 if (item.IsCompleted)
                 {
+                    string newDir = m_rootDirectory + FixDirectory(m_mediaDownload.mediaFile.Media.Name);
+                    if (m_isRestoring)
+                    {
+                        m_mediaDownload.mediaFile.FilePath = FindMediaFileRecursive(newDir);
+                        if (m_mediaDownload.mediaFile.FilePath != string.Empty)
+                        {
+                            m_mediaDownload.mediaFile.FinishedProcessing();
+                            m_timer.Stop();
+                            return;
+                        }
+                    }
                     string intFilePath = FindMediaFileRecursive(item.Directory);
                     intFilePath = intFilePath.Replace('\\', '/');
 
                     //MediaBase movie = await GetMovieByIDAsync(imdbID);
-
-                    string newDir = m_rootDirectory + FixDirectory(m_mediaDownload.mediaFile.Media.Name);
+                    
                     Directory.CreateDirectory(newDir);
 
                     string newFilePath = newDir + "/" + FixDirectory(m_mediaDownload.mediaFile.Media.Name) + Path.GetExtension(intFilePath);
@@ -93,6 +115,7 @@ namespace TobesMediaCore.MediaRequest
                     m_mediaDownload.mediaFile.FilePath = newFilePath;
                     m_mediaDownload.mediaFile.FinishedProcessing();
                     m_timer.Stop();
+                    m_mediaDatabase.RemoveMedia(m_mediaFile.Media.ID);
                 }
             }
         }
@@ -107,6 +130,8 @@ namespace TobesMediaCore.MediaRequest
         private string[] m_videoFormats = new string[] { ".mp4", ".mkv", ".avi", ".m4a", ".m4v", ".f4v", ".wmv" };
         private string FindMediaFileRecursive(string directory)
         {
+            if (!Directory.Exists(directory))
+                return string.Empty;
             string[] files = Directory.GetFiles(directory);
             foreach (string file in files)
             {
@@ -120,15 +145,27 @@ namespace TobesMediaCore.MediaRequest
                 if (file != "")
                     return file;
             }
-            return "";
+            return string.Empty;
         }
 
-        public async Task ProcessMediaAsync(MediaFile mediaFile, MediaType type)
+        public async Task ProcessMediaAsync(MediaFile mediaFile, MediaType type, bool restore)
         {
+            string newDir = m_rootDirectory + FixDirectory(mediaFile.Media.Name);
+            string mediaCheck = FindMediaFileRecursive(newDir);
+            if (mediaCheck != string.Empty)
+            {
+                mediaFile.FilePath = mediaCheck;
+                mediaFile.FinishedProcessing();
+                m_timer.Stop();
+                return;
+            }
+            m_isRestoring = restore;
+            m_mediaType = type;
+            m_mediaFile = mediaFile;
             Console.WriteLine("Processing Download");
             string nzbLink;
             if (type == MediaType.Movies)
-                nzbLink = await m_usenetIndexer.GetMovieLinkByNzbIdAsync(mediaFile.Media.ID);
+                nzbLink = await m_usenetIndexer.GetMovieLinkByNzbIdAsync(mediaFile.Media.ID, m_downloadIndex);
             else
                 nzbLink = await m_usenetIndexer.GetShowLinkByNzbIdAsync(mediaFile.Media.ID);
             if (nzbLink == string.Empty)
@@ -149,6 +186,13 @@ namespace TobesMediaCore.MediaRequest
             Console.WriteLine("Downloading");
             mediaFile.Message = "Downloading";
             m_mediaDownload = new NzbMediaDownload(id, mediaFile);
+        }
+
+        public void TryNextDownload()
+        {
+            m_downloadIndex++;
+            m_mediaDatabase.RemoveMedia(m_mediaFile.Media.ID);
+            ProcessMediaAsync(m_mediaFile, m_mediaType, m_isRestoring);
         }
     }
 }

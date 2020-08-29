@@ -27,7 +27,7 @@ namespace TobesMediaServer.MediaPipeline
             }
         }
 
-        public async Task ProcessMediaAsync(MediaBase media)
+        public async Task ProcessMediaAsync(MediaBase media, bool restore = false)
         {
             MediaFile file = new MediaFile(media);
             file.IsProcessing = true;
@@ -36,7 +36,7 @@ namespace TobesMediaServer.MediaPipeline
                 m_database.AddMedia(media.ID);
             foreach (IMediaService service in m_services)
             {
-                await service.ProcessMediaAsync(file, MediaType.Movies);
+                await service.ProcessMediaAsync(file, MediaType.Movies, restore);
                 while (!file.IsFinishedProcessing)
                 {
                     if (file.ShouldStopAllProcessing)

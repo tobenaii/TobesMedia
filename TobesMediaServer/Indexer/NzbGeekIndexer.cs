@@ -11,10 +11,10 @@ namespace TobesMediaServer.Indexer
     {
         private HttpClient m_client = new HttpClient();
 
-        public async Task<string> GetMovieLinkByNzbIdAsync(string id)
+        public async Task<string> GetMovieLinkByNzbIdAsync(string id, int index)
         {
             string url = "https://api.nzbgeek.info/api?t=movie&q=1080p&maxsize=5242880000&imdbid=" + id.Replace("tt", "").Replace("TT", "") + "&limit=50&o=json&apikey=3d98d8eaf835802e503a0a936f37ce7c";
-            return await GetResultAsync(url, id);
+            return await GetResultAsync(url, id, index);
         }
 
         public async Task<string> GetShowLinkByNzbIdAsync(string id)
@@ -23,7 +23,7 @@ namespace TobesMediaServer.Indexer
             return await GetResultAsync(url, id);
         }
 
-        private async Task<string> GetResultAsync(string url, string id)
+        private async Task<string> GetResultAsync(string url, string id, int index = 0)
         {
             var message = await m_client.GetAsync(url);
             string json = await message.Content.ReadAsStringAsync();
@@ -34,7 +34,9 @@ namespace TobesMediaServer.Indexer
                 if (token == null)
                     return string.Empty;
                 JArray array = JArray.Parse(token.ToString());
-                string link = array[0]["link"].ToString().Replace(";", "&");
+                if (index >= array.Count)
+                    return string.Empty;
+                string link = array[index]["link"].ToString().Replace(";", "&");
                 return link;
             }
             catch

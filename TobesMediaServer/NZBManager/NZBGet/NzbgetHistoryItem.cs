@@ -19,5 +19,6 @@ namespace TobesMediaServer.NZBGet
         public string MarkStatus { get; set; }
         public string DestDir { get; set; }
         public string FinalDir { get; set; }
+        public string Status { get; set; }
     }
 }
