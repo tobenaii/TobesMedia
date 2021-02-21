@@ -11,15 +11,16 @@ namespace TobesMediaServer.Indexer
     {
         private HttpClient m_client = new HttpClient();
 
-        public async Task<string> GetMovieLinkByNzbIdAsync(string id, int index)
+        public async Task<bool> DoesShowExistAsync(string id)
         {
-            string url = "https://api.nzbgeek.info/api?t=movie&q=1080p&maxsize=5242880000&imdbid=" + id.Replace("tt", "").Replace("TT", "") + "&limit=50&o=json&apikey=3d98d8eaf835802e503a0a936f37ce7c";
-            return await GetResultAsync(url, id, index);
+            string url = "https://api.nzbgeek.info/api?t=tvsearch&maxsize=5242880000&tvdbid=" + id.Replace("tt", "").Replace("TT", "") + "&limit=50&o=json&apikey=3d98d8eaf835802e503a0a936f37ce7c";
+            string results = await GetResultAsync(url, id);
+            return results != string.Empty;
         }
 
-        public async Task<string> GetShowLinkByNzbIdAsync(string id)
+        public async Task<string> GetShowLinkByNzbIdAsync(string id, int season, int episode)
         {
-            string url = "https://api.nzbgeek.info/api?t=tvsearch&q=1080p&maxsize=5242880000&tvdbid=" + id.Replace("tt", "").Replace("TT", "") + "&limit=50&o=json&apikey=3d98d8eaf835802e503a0a936f37ce7c";
+            string url = "https://api.nzbgeek.info/api?t=tvsearch&q=" + "S" + (season < 10 ? "0":"") + season + "E" + (episode < 10 ? "0" : "") + episode + "&maxsize=5242880000&tvdbid=" + id.Replace("tt", "").Replace("TT", "") + "&limit=50&o=json&apikey=3d98d8eaf835802e503a0a936f37ce7c";
             return await GetResultAsync(url, id);
         }
 

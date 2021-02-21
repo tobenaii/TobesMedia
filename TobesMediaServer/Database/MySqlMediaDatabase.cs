@@ -51,6 +51,14 @@ namespace TobesMediaServer.Database
             return exists.HasRows;
         }
 
+        public async Task<string> GetFilePathAsync(string id)
+        {
+            string sql = $"select value from {m_table} where id='{id}'";
+            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+            object dir = await command.ExecuteScalarAsync();
+            return dir.ToString();
+        }
+
         public async Task<List<string>> GetAllIdsAsync()
         {
             List<string> ids = new List<string>();

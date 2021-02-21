@@ -18,9 +18,9 @@ namespace TobesMediaCore.Data.Media
         public List<MediaBase> List = new List<MediaBase>();
         public int Pages { get; private set; }
 
-        public async Task LoadMoviesByName(MediaType mediaType, string name, int page, HttpClient client, Action f, bool checkDownloads)
+        public async Task LoadMediaByName(string name, int page, HttpClient client, bool checkDownloads = false)
         {
-            string type = ((mediaType == MediaType.Movies)?"movies":(mediaType == MediaType.Shows)?"shows":"anime");
+            string type = "anime";
             HttpResponseMessage response = await client.GetAsync($"https://localhost:5001/api/media/get/{type}/{name}/{page}/{checkDownloads}");
             if (!response.IsSuccessStatusCode)
                 return;
@@ -32,7 +32,6 @@ namespace TobesMediaCore.Data.Media
             foreach (MediaBase media in mediaPage.Media)
             {
                 List.Add(media);
-                f();
                 await Task.Delay(50);
             }
         }

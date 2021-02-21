@@ -9,6 +9,6 @@ namespace TobesMediaServer.MediaPipeline
 {
     public interface IMediaPipeline
     {
-        public Task ProcessMediaAsync(MediaBase media, bool restore = false);
+        public Task ProcessMediaAsync(MediaBase media, int season, int episode, bool restore = false);
     }
 }

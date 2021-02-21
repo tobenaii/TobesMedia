@@ -28,7 +28,7 @@ namespace TobesMediaServer.Transcoding
             m_mediaFile.FinishedProcessing();
         }
 
-        public async Task ProcessMediaAsync(MediaPipeline.MediaFile media, MediaType type, bool restore)
+        public async Task ProcessMediaAsync(MediaPipeline.MediaFile media, bool restore)
         {
             string filePath = media.FilePath;
             Console.WriteLine("Processing Transcode");

@@ -9,17 +9,18 @@ using System.Threading.Tasks;
 using TobesMediaCommon.Data.Media;
 using TobesMediaCore.Data.Media;
 using TobesMediaServer.Indexer;
+using TobesMediaServer.MediaInfo.API;
 
 namespace TobesMediaServer.MediaInfo.OMDB
 {
-    public class ThetvdbShowInfo : IShowInfo
+    public class ThetvdbAnimeInfo : IAnimeInfo
     {
         HttpClient m_client = new HttpClient();
         private const string m_basePosterURL = "https://thetvdb.com/banners/";
 
         private IUsenetIndexer m_indexer;
 
-        public ThetvdbShowInfo(IUsenetIndexer indexer)
+        public ThetvdbAnimeInfo(IUsenetIndexer indexer)
         {
             m_indexer = indexer;
         }
@@ -82,7 +83,7 @@ namespace TobesMediaServer.MediaInfo.OMDB
             foreach (JToken genre in genres.Children())
                 if (genre.ToString() == "Anime")
                     return null;
-            if (await m_indexer.GetShowLinkByNzbIdAsync(tvdbid) == string.Empty)
+            if (!await m_indexer.DoesShowExistAsync(tvdbid))
             {
                 return null;
             }
@@ -92,7 +93,7 @@ namespace TobesMediaServer.MediaInfo.OMDB
             string posterPath = result["poster"].ToString();
             if (posterPath == null || posterPath == string.Empty)
                 return null;
-            MediaBase media = new MediaBase(result["seriesName"].ToString(), result["overview"].ToString(), m_basePosterURL + posterPath, tvdbid);
+            MediaBase media = new MediaBase(result["seriesName"].ToString(), result["overview"].ToString(), m_basePosterURL + posterPath, id, tvdbid);
             if (mediaList != null)
                 mediaList.Add(media);
             return media;

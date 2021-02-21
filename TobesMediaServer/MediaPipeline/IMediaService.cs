@@ -8,6 +8,6 @@ namespace TobesMediaServer.MediaPipeline
 {
     public interface IMediaService
     {
-        public Task ProcessMediaAsync(MediaFile media, MediaType type, bool restore);
+        public Task ProcessMediaAsync(MediaFile media, bool restore);
     }
 }

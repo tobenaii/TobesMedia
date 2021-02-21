@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using TobesMediaCommon.Data.Media;
 using TobesMediaServer.MediaInfo.API;
+using TobesMediaServer.MediaPipeline;
 
 namespace TobesMediaServer.Controllers
 {
@@ -15,10 +16,12 @@ namespace TobesMediaServer.Controllers
     public class AnimeInfoController : ControllerBase
     {
         private IAnimeInfo m_animeInfo;
+        private IPipelineData m_pipelineData;
 
-        public AnimeInfoController(IAnimeInfo animeInfo)
+        public AnimeInfoController(IAnimeInfo animeInfo, IPipelineData pipelineData)
         {
             m_animeInfo = animeInfo;
+            m_pipelineData = pipelineData;
         }
 
         [Route("media/get/anime/{name}/{page}/{checkDownload}")]
@@ -26,6 +29,15 @@ namespace TobesMediaServer.Controllers
         {
             MediaPage movies = await m_animeInfo.GetMediaByNameAsync(name, page, checkDownload);
             return JsonConvert.SerializeObject(movies);
+        }
+
+        [Route("media/get/anime/status/{id}")]
+        public string GetMediaStatus(string id)
+        {
+            MediaStatus? status = m_pipelineData.GetStatus(id);
+            if (status.HasValue)
+                return JsonConvert.SerializeObject(status.Value);
+            return JsonConvert.SerializeObject(new MediaStatus());
         }
     }
 }

@@ -17,7 +17,6 @@ using TobesMediaServer.NZBGet;
 using TobesMediaServer.NZBManager;
 using TobesMediaCore.MediaRequest;
 using TobesMediaServer.MediaInfo;
-using TobesMediaServer.OMDB;
 using TobesMediaServer.MediaPipeline;
 using TobesMediaServer.MediaInfo.API;
 using TobesMediaServer.Indexer;
@@ -38,6 +37,7 @@ namespace TobesMediaServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public async void ConfigureServices(IServiceCollection services)
         {
+            services.AddLettuceEncrypt();
             services.AddControllers();
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
@@ -45,8 +45,6 @@ namespace TobesMediaServer
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
-            services.AddSingleton<IMovieInfo, TmdbMovieInfo>();
-            services.AddSingleton<IShowInfo, TmdbShowInfo>();
             services.AddSingleton<IAnimeInfo, TmdbAnimeInfo>();
 
             services.AddSingleton<IMediaPipelineDatabase, MySqlMediaDatabase>(x => new MySqlMediaDatabase("Pipeline"));
@@ -61,17 +59,16 @@ namespace TobesMediaServer
             services.AddTransient<IMediaService, NzbDownloadService>();
             services.AddTransient<IMediaService, FfmpegTranscodeService>();
 
-            services.AddTransient<IMediaPipeline, MoviePipeline>();
+            services.AddTransient<IMediaPipeline, AnimePipeline>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMediaPipelineDatabase pipelineDB, IMovieInfo movieInfo)
+        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMediaPipelineDatabase pipelineDB, IAnimeInfo animeInfo)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.UseHttpsRedirection();
             app.UseCors("MyPolicy");
             app.UseRouting();
 
@@ -84,12 +81,12 @@ namespace TobesMediaServer
 
             List<string> ids = await pipelineDB.GetAllIdsAsync();
             List<Task> pipes = new List<Task>();
-            foreach (string id in ids)
-            {
-                var movie = await movieInfo.GetMediaByIDAsync(id);
-                IMediaPipeline pipe = app.ApplicationServices.GetRequiredService<IMediaPipeline>();
-                pipes.Add(pipe.ProcessMediaAsync(movie, true));
-            }
+            //foreach (string id in ids)
+            //{
+            //    var anime = await animeInfo.GetMediaByIDAsync(id);
+            //    IMediaPipeline pipe = app.ApplicationServices.GetRequiredService<IMediaPipeline>();
+            //    pipes.Add(pipe.ProcessMediaAsync(anime, true));
+            //}
             await Task.WhenAll(pipes);
         }
     }

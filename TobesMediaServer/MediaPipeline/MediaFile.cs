@@ -19,10 +19,14 @@ namespace TobesMediaServer.MediaPipeline
         public bool IsProcessing { set { m_status.IsProcessing = value; } }
         public bool IsFinishedProcessing { get; private set; }
         public bool ShouldStopAllProcessing { get; private set; }
+        public int Season { get; private set; }
+        public int Episode { get; private set; }
 
-        public MediaFile(MediaBase media)
+        public MediaFile(MediaBase media, int season, int episode)
         {
             Media = media;
+            Season = season;
+            Episode = episode;
         }
 
         public void FinishedProcessing()
@@ -33,6 +37,11 @@ namespace TobesMediaServer.MediaPipeline
         public void StopAllProcessing()
         {
             ShouldStopAllProcessing = true;
+        }
+
+        public void Complete()
+        {
+            m_status.IsComplete = true;
         }
     }
 }

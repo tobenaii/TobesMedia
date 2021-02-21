@@ -19,7 +19,7 @@ namespace TobesMediaServer.MediaPipeline
 
         public MediaStatus? GetStatus(string id)
         {
-            return m_media.SingleOrDefault(x => x.Media.ID == id)?.Status;
+            return m_media.FirstOrDefault(x => x.Media.SearchID == id)?.Status;
         }
     }
 }

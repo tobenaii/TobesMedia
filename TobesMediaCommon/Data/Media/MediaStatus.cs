@@ -9,5 +9,7 @@ namespace TobesMediaCommon.Data.Media
         public bool IsProcessing { get; set; }
         public string Message { get; set; }
         public int Progress { get; set; }
+
+        public bool IsComplete { get; set; }
     }
 }

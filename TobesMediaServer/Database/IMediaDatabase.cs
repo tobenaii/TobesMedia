@@ -13,5 +13,6 @@ namespace TobesMediaServer.Database
         public void RemoveMedia(string id);
 
         public Task<List<string>> GetAllIdsAsync();
+        public Task<string> GetFilePathAsync(string id);
     }
 }
