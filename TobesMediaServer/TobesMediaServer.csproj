@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LettuceEncrypt" Version="1.0.1" />
+    <PackageReference Include="LettuceEncrypt" Version="1.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.3" />
     <PackageReference Include="StreamJsonRpc" Version="2.4.48" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.1" />
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TobesMediaCommon\TobesMediaCommon.csproj" />
+    <ProjectReference Include="..\..\iCinemachine\TobesMediaCommon\TobesMediaCommon.csproj" />
   </ItemGroup>
 
 

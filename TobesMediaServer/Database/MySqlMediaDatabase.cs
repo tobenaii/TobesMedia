@@ -29,31 +29,31 @@ namespace TobesMediaServer.Database
             command.ExecuteNonQuery();
         }
 
-        public void AddMedia(string id, string value = "")
+        public void AddMedia(string id, int season, int episode, string value = "")
         {
-            string sql = $"insert into {m_table}(id, value) values ('{id}', '{value}')";
+            string sql = $"insert into {m_table}(id, value) values ('{id}-{season}-{episode}', '{value}')";
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
             command.ExecuteNonQuery();
         }
 
-        public void RemoveMedia(string id)
+        public void RemoveMedia(string id, int season, int episode)
         {
-            string sql = $"delete from {m_table} where id='{id}'";
+            string sql = $"delete from {m_table} where id='{id}-{season}-{episode}'";
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
             command.ExecuteNonQuery();
         }
 
-        public async Task<bool> MediaExistsAsync(string id)
+        public async Task<bool> MediaExistsAsync(string id, int season, int episode)
         {
-            string sql = $"select id from {m_table} where id='{id}'";
+            string sql = $"select id from {m_table} where id='{id}-{season}-{episode}'";
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
             DbDataReader exists = await command.ExecuteReaderAsync();
             return exists.HasRows;
         }
 
-        public async Task<string> GetFilePathAsync(string id)
+        public async Task<string> GetFilePathAsync(string id, int season, int episode)
         {
-            string sql = $"select value from {m_table} where id='{id}'";
+            string sql = $"select value from {m_table} where id='{id}-{season}-{episode}'";
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
             object dir = await command.ExecuteScalarAsync();
             return dir.ToString();
@@ -79,11 +79,11 @@ namespace TobesMediaServer.Database
             }
         }
 
-        public async Task<string> GetValueAsync(string id)
+        public async Task<string> GetValueAsync(string id, int season, int episode)
         {
             try
             {
-                string sql = $"select value from {m_table} where id='{id}'";
+                string sql = $"select value from {m_table} where id='{id}-{season}-{episode}'";
                 SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
                 object obj = await command.ExecuteScalarAsync();
                 if (obj != null)

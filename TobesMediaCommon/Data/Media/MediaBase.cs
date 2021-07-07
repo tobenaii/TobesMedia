@@ -49,7 +49,7 @@ namespace TobesMediaCore.Data.Media
 
         public async Task UpdateStatus(HttpClient client)
         {
-            HttpResponseMessage response = await client.GetAsync("https://localhost:5001/api/media/get/anime/status/" + SearchID);
+            HttpResponseMessage response = await client.GetAsync("https://tobenai.com/api/media/get/anime/status/" + SearchID);
             string statusJson = await response.Content.ReadAsStringAsync();
             MediaStatus status = JsonConvert.DeserializeObject<MediaStatus>(statusJson);
             Status = status;
@@ -57,12 +57,17 @@ namespace TobesMediaCore.Data.Media
 
         public void Download(HttpClient client, int season, int episode)
         {
-            client.PutAsync("https://localhost:5001/api/media/request/anime/" + ID + "/" + season + "/" + episode, null);
+            client.PutAsync("https://tobenai.com/api/media/request/anime/" + ID + "/" + season + "/" + episode, null);
+        }
+
+        public string GetVideoUrl(int season, int episode)
+        {
+            return $"https://tobenai.com/api/media/play/{ID}/{season}/{episode}";
         }
 
         public async Task UpdateAvailability(HttpClient client)
         {
-            HttpResponseMessage response = await client.GetAsync("https://localhost:5001/api/media/get/movies/isAvailable/" + SearchID);
+            HttpResponseMessage response = await client.GetAsync("https://tobenai.com/api/media/get/movies/isAvailable/" + SearchID);
             IsAvailable = await response.Content.ReadAsAsync<bool>();
         }
     }

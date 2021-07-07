@@ -32,11 +32,11 @@ namespace TobesMediaServer.Controllers.Anime
             await m_mediaPipeline.ProcessMediaAsync(media, season, episode);
         }
 
-        [Route("media/play/anime/{id}")]
-        public async Task<FileResult> PlayMovieByIDAsync(string id)
+        [Route("media/play/{id}/{season}/{episode}")]
+        public async Task<FileResult> PlayMovieByIDAsync(string id, int season, int episode)
         {
             Console.WriteLine(id);
-            string movieDir = await m_mediaDatabase.GetFilePathAsync(id);
+            string movieDir = await m_mediaDatabase.GetFilePathAsync(id, season, episode);
             PhysicalFileResult file = PhysicalFile(movieDir, "video/webm", true);
             return file;
         }

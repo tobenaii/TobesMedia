@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.30104.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TobesMediaServer", "TobesMediaServer\TobesMediaServer.csproj", "{0FAC826A-6A4B-44FE-811F-EBE3AB980CEB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TobesMediaCommon", "TobesMediaCommon\TobesMediaCommon.csproj", "{FFB410AD-DFD6-4646-AB4A-01AF841E7082}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "iCinemachineAuth", "..\iCinemachine\iCinemachineAuth\iCinemachineAuth.csproj", "{1CBF3A3B-591C-4AD5-A3BF-D0AC00FB7295}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TobesMediaCommon", "..\iCinemachine\TobesMediaCommon\TobesMediaCommon.csproj", "{9397BF24-C456-4960-B1F9-DE011AFC9460}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +19,14 @@ Global
 		{0FAC826A-6A4B-44FE-811F-EBE3AB980CEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0FAC826A-6A4B-44FE-811F-EBE3AB980CEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0FAC826A-6A4B-44FE-811F-EBE3AB980CEB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FFB410AD-DFD6-4646-AB4A-01AF841E7082}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FFB410AD-DFD6-4646-AB4A-01AF841E7082}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FFB410AD-DFD6-4646-AB4A-01AF841E7082}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FFB410AD-DFD6-4646-AB4A-01AF841E7082}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CBF3A3B-591C-4AD5-A3BF-D0AC00FB7295}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CBF3A3B-591C-4AD5-A3BF-D0AC00FB7295}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CBF3A3B-591C-4AD5-A3BF-D0AC00FB7295}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CBF3A3B-591C-4AD5-A3BF-D0AC00FB7295}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9397BF24-C456-4960-B1F9-DE011AFC9460}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9397BF24-C456-4960-B1F9-DE011AFC9460}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9397BF24-C456-4960-B1F9-DE011AFC9460}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9397BF24-C456-4960-B1F9-DE011AFC9460}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

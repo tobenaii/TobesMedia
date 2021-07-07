@@ -21,7 +21,7 @@ namespace TobesMediaCore.Data.Media
         public async Task LoadMediaByName(string name, int page, HttpClient client, bool checkDownloads = false)
         {
             string type = "anime";
-            HttpResponseMessage response = await client.GetAsync($"https://localhost:5001/api/media/get/{type}/{name}/{page}/{checkDownloads}");
+            HttpResponseMessage response = await client.GetAsync($"https://tobenai.com/api/media/get/{type}/{name}/{page}/{checkDownloads}");
             if (!response.IsSuccessStatusCode)
                 return;
             string jsonObj = await response.Content.ReadAsStringAsync();

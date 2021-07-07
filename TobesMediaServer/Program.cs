@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,16 @@ namespace TobesMediaServer
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>().UseStaticWebAssets();
+                    webBuilder.UseKestrel(k =>
+                    {
+                        var appServices = k.ApplicationServices;
+                        k.ConfigureHttpsDefaults(h =>
+                        {
+                            h.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                            h.UseLettuceEncrypt(appServices);
+                        });
+                    });
+                    webBuilder.UseStartup<Startup>();
                 });
     }
 }

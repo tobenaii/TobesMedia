@@ -7,7 +7,8 @@ namespace TobesMediaServer.Indexer
 {
     public interface IUsenetIndexer
     {
-        public Task<string> GetShowLinkByNzbIdAsync(string id, int season, int episode);
+        public List<string> BannedLinks { get; }
+        public Task<string> GetShowLinkByNzbIdAsync(string id, int season, int episode, int downloadIndex);
         public Task<bool> DoesShowExistAsync(string id);
 
     }

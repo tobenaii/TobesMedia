@@ -34,8 +34,8 @@ namespace TobesMediaServer.MediaPipeline
             MediaFile file = new MediaFile(media, season, episode);
             file.IsProcessing = true;
             m_data.AddMedia(file);
-            if (!await m_database.MediaExistsAsync(media.SearchID))
-                m_database.AddMedia(media.SearchID);
+            if (!await m_database.MediaExistsAsync(media.SearchID, season, episode))
+                m_database.AddMedia(media.SearchID, season, episode);
             foreach (IMediaService service in m_services)
             {
                 await service.ProcessMediaAsync(file, restore);
@@ -51,8 +51,8 @@ namespace TobesMediaServer.MediaPipeline
             }
             file.Complete();
             file.IsProcessing = false;
-            m_database.RemoveMedia(media.SearchID);
-            m_localDatabase.AddMedia(media.SearchID, file.FilePath);
+            m_database.RemoveMedia(media.SearchID, season, episode);
+            m_localDatabase.AddMedia($"{media.ID}", season, episode, file.FilePath);
             var p = new Process();
             p.StartInfo = new ProcessStartInfo(file.FilePath)
             {
